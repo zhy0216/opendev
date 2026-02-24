@@ -2,6 +2,7 @@ import { ORPCError } from '@orpc/server';
 import { pub, type Context } from './orpc';
 import { IAuth, type Auth } from '@repo/auth';
 import { transactionMiddleware } from './transaction.middleware';
+import { internalAuthMiddleware } from './internal-auth.middleware';
 import { loggingMiddleware, authLoggingMiddleware } from './logging.middleware';
 import { getLogger } from '@repo/logger';
 import { z } from 'zod';
@@ -44,6 +45,10 @@ export const protectedProcedure = pub
   .use(transactionMiddleware)
   .use(authMiddleware)
   .use(authLoggingMiddleware);
+
+export const internalProcedure = pub
+  .use(loggingMiddleware)
+  .use(internalAuthMiddleware);
 
 // Helper function to check project membership
 export async function checkProjectMembership(

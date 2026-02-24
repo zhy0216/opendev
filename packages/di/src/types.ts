@@ -16,3 +16,10 @@ export abstract class IEncryptionService {
   abstract hashToken(token: string): string;
   abstract generateToken(): string;
 }
+
+export abstract class IInternalAuthService {
+  abstract generateToken(): string;
+  abstract verifyToken(token: string): boolean;
+  abstract generateSandboxToken(): { token: string; hash: string };
+  abstract verifySandboxToken(rawToken: string, storedHash: string): boolean;
+}

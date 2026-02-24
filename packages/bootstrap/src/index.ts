@@ -8,9 +8,36 @@ import {
   IProjectRepository,
   OrganizationRepository,
   IOrganizationRepository,
+  SessionRepository,
+  ISessionRepository,
+  SessionParticipantRepository,
+  ISessionParticipantRepository,
+  SessionMessageRepository,
+  ISessionMessageRepository,
+  SessionEventRepository,
+  ISessionEventRepository,
+  SessionArtifactRepository,
+  ISessionArtifactRepository,
+  SecretRepository,
+  ISecretRepository,
 } from '@repo/repository';
-import { EmailService, IEmailService, EncryptionService } from '@repo/service';
-import { CreateProjectUseCase, ICreateProjectUseCase } from '@repo/use-case';
+import {
+  EmailService,
+  IEmailService,
+  EncryptionService,
+  GitHubService,
+  IGitHubService,
+  InternalAuthService,
+  IInternalAuthService,
+} from '@repo/service';
+import {
+  CreateProjectUseCase,
+  ICreateProjectUseCase,
+  CreateSessionUseCase,
+  ICreateSessionUseCase,
+  QueuePromptUseCase,
+  IQueuePromptUseCase,
+} from '@repo/use-case';
 import { createDb } from '@repo/db';
 import { env } from '@repo/env';
 import { configureLogger, logger } from '@repo/logger';
@@ -44,13 +71,23 @@ export function initializeContainer() {
   container.bind(IUserRepository).to(UserRepository);
   container.bind(IProjectRepository).to(ProjectRepository);
   container.bind(IOrganizationRepository).to(OrganizationRepository);
+  container.bind(ISessionRepository).to(SessionRepository);
+  container.bind(ISessionParticipantRepository).to(SessionParticipantRepository);
+  container.bind(ISessionMessageRepository).to(SessionMessageRepository);
+  container.bind(ISessionEventRepository).to(SessionEventRepository);
+  container.bind(ISessionArtifactRepository).to(SessionArtifactRepository);
+  container.bind(ISecretRepository).to(SecretRepository);
 
   // Bind services
   container.bind(IEmailService).to(EmailService);
   container.bind(IEncryptionService).to(EncryptionService);
+  container.bind(IGitHubService).to(GitHubService);
+  container.bind(IInternalAuthService).to(InternalAuthService);
 
   // Bind use cases
   container.bind(ICreateProjectUseCase).to(CreateProjectUseCase);
+  container.bind(ICreateSessionUseCase).to(CreateSessionUseCase);
+  container.bind(IQueuePromptUseCase).to(QueuePromptUseCase);
 
   logger.debug('Container initialization complete');
 

@@ -1,3 +1,3 @@
-export { IDatabase, ITransaction, IEncryptionService } from './types';
+export { IDatabase, ITransaction, IEncryptionService, IInternalAuthService } from './types';
 export { container } from './container';
 export { getContainer, getInject, runWithTransaction } from './transaction';

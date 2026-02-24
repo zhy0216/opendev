@@ -24,6 +24,7 @@
     "@repo/di": "workspace:*",
     "@repo/logger": "workspace:*",
     "@repo/repository": "workspace:*",
+    "@repo/service": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/use-case": "workspace:*",
     "typescript": "^5.7.0"

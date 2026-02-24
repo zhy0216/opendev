@@ -15,6 +15,14 @@ export const env = createEnv({
     TRIGGER_PROJECT_REF: z.string().optional(),
     // Encryption
     TOKEN_ENCRYPTION_KEY: z.string().min(64, 'TOKEN_ENCRYPTION_KEY must be at least 64 characters (32-byte hex)').default('0'.repeat(64)),
+    // Internal service-to-service auth
+    INTERNAL_CALLBACK_SECRET: z.string().min(32).default('development-internal-secret-change-in-production-min32chars'),
+    // GitHub App configuration
+    GITHUB_APP_ID: z.string().optional(),
+    GITHUB_PRIVATE_KEY: z.string().optional(),
+    GITHUB_CLIENT_ID: z.string().optional(),
+    GITHUB_CLIENT_SECRET: z.string().optional(),
+    GITHUB_WEBHOOK_SECRET: z.string().optional(),
     // Logging configuration
     LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).optional(),
   },
