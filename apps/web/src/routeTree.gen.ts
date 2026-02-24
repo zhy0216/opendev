@@ -13,6 +13,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
+import { Route as DashboardSessionsRouteImport } from './routes/dashboard/sessions'
 import { Route as DashboardProjectsRouteImport } from './routes/dashboard/projects'
 import { Route as DashboardOrganizationsRouteImport } from './routes/dashboard/organizations'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
@@ -37,6 +38,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
 const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardSessionsRoute = DashboardSessionsRouteImport.update({
+  id: '/sessions',
+  path: '/sessions',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardProjectsRoute = DashboardProjectsRouteImport.update({
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
   '/dashboard/organizations': typeof DashboardOrganizationsRouteWithChildren
   '/dashboard/projects': typeof DashboardProjectsRoute
+  '/dashboard/sessions': typeof DashboardSessionsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/organizations/$orgId': typeof DashboardOrganizationsOrgIdRoute
@@ -83,6 +90,7 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/dashboard/organizations': typeof DashboardOrganizationsRouteWithChildren
   '/dashboard/projects': typeof DashboardProjectsRoute
+  '/dashboard/sessions': typeof DashboardSessionsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/organizations/$orgId': typeof DashboardOrganizationsOrgIdRoute
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/auth/login': typeof AuthLoginRoute
   '/dashboard/organizations': typeof DashboardOrganizationsRouteWithChildren
   '/dashboard/projects': typeof DashboardProjectsRoute
+  '/dashboard/sessions': typeof DashboardSessionsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/organizations/$orgId': typeof DashboardOrganizationsOrgIdRoute
@@ -108,6 +117,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/dashboard/organizations'
     | '/dashboard/projects'
+    | '/dashboard/sessions'
     | '/dashboard/settings'
     | '/dashboard/'
     | '/dashboard/organizations/$orgId'
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/dashboard/organizations'
     | '/dashboard/projects'
+    | '/dashboard/sessions'
     | '/dashboard/settings'
     | '/dashboard'
     | '/dashboard/organizations/$orgId'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/dashboard/organizations'
     | '/dashboard/projects'
+    | '/dashboard/sessions'
     | '/dashboard/settings'
     | '/dashboard/'
     | '/dashboard/organizations/$orgId'
@@ -169,6 +181,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/dashboard/settings'
       preLoaderRoute: typeof DashboardSettingsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/sessions': {
+      id: '/dashboard/sessions'
+      path: '/sessions'
+      fullPath: '/dashboard/sessions'
+      preLoaderRoute: typeof DashboardSessionsRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/projects': {
@@ -226,6 +245,7 @@ const DashboardOrganizationsRouteWithChildren =
 interface DashboardRouteChildren {
   DashboardOrganizationsRoute: typeof DashboardOrganizationsRouteWithChildren
   DashboardProjectsRoute: typeof DashboardProjectsRoute
+  DashboardSessionsRoute: typeof DashboardSessionsRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardSessionSessionIdRoute: typeof DashboardSessionSessionIdRoute
@@ -234,6 +254,7 @@ interface DashboardRouteChildren {
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardOrganizationsRoute: DashboardOrganizationsRouteWithChildren,
   DashboardProjectsRoute: DashboardProjectsRoute,
+  DashboardSessionsRoute: DashboardSessionsRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardSessionSessionIdRoute: DashboardSessionSessionIdRoute,
