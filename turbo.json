@@ -1,0 +1,47 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "DATABASE_URL",
+    "NODE_ENV",
+    "SERVER_PORT",
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL",
+    "TRIGGER_SECRET_KEY",
+    "TRIGGER_PROJECT_REF",
+    "RESEND_API_KEY",
+    "EMAIL_FROM"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "dependsOn": ["^build"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"]
+    },
+    "db:generate": {
+      "cache": false
+    },
+    "db:migrate": {
+      "cache": false
+    },
+    "db:studio": {
+      "cache": false,
+      "persistent": true
+    },
+    "trigger:dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "trigger:deploy": {
+      "cache": false
+    }
+  }
+}

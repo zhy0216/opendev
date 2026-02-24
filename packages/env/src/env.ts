@@ -1,0 +1,23 @@
+import { createEnv } from '@t3-oss/env-core';
+import { z } from 'zod';
+
+export const env = createEnv({
+  server: {
+    NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+    DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
+    SERVER_PORT: z.coerce.number().int().positive().default(3000),
+    BETTER_AUTH_SECRET: z.string().min(1, 'BETTER_AUTH_SECRET is required'),
+    BETTER_AUTH_URL: z.string().url().default('http://localhost:3000'),
+    RESEND_API_KEY: z.string().min(1, 'RESEND_API_KEY is required'),
+    EMAIL_FROM: z.string().email().default('noreply@example.com'),
+    // Trigger.dev configuration
+    TRIGGER_SECRET_KEY: z.string().optional(),
+    TRIGGER_PROJECT_REF: z.string().optional(),
+    // Logging configuration
+    LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).optional(),
+  },
+  runtimeEnv: process.env,
+  emptyStringAsUndefined: true,
+});
+
+export type Env = typeof env;

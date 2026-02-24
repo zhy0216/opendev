@@ -1,0 +1,26 @@
+{
+  "name": "@repo/server",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "start": "bun run dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@orpc/server": "latest",
+    "reflect-metadata": "^0.2.2"
+  },
+  "devDependencies": {
+    "@repo/auth": "workspace:*",
+    "@repo/bootstrap": "workspace:*",
+    "@repo/env": "workspace:*",
+    "@repo/routes": "workspace:*",
+    "@repo/logger": "workspace:*",
+    "@repo/di": "workspace:*",
+    "@types/bun": "latest",
+    "typescript": "^5.9.3"
+  }
+}
