@@ -4,7 +4,8 @@ export type ClientMessage =
   | { type: 'prompt'; content: string; model?: string; reasoningEffort?: string }
   | { type: 'stop' }
   | { type: 'ping' }
-  | { type: 'presence'; status: 'active' | 'idle' }
+  | { type: 'presence'; status: 'active' | 'idle' | 'typing' }
+  | { type: 'typing'; isTyping: boolean }
   | { type: 'fetch_history'; cursor?: string; limit?: number };
 
 // Server -> Client messages
@@ -23,7 +24,7 @@ export type ServerMessage =
 export interface PresenceInfo {
   userId: string;
   clientId: string;
-  status: 'active' | 'idle';
+  status: 'active' | 'idle' | 'typing';
   lastSeen: number;
 }
 

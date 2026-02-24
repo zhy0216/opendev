@@ -131,7 +131,11 @@ export function SessionSidebar({
                 <span
                   className={cn(
                     'h-2 w-2 rounded-full flex-shrink-0',
-                    p.status === 'active' ? 'bg-green-400' : 'bg-yellow-400'
+                    p.status === 'active'
+                      ? 'bg-green-400'
+                      : p.status === 'typing'
+                        ? 'bg-green-400 animate-pulse'
+                        : 'bg-yellow-400'
                   )}
                 />
                 <span className="text-sm text-gray-700 truncate">

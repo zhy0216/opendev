@@ -89,7 +89,7 @@ function handlePing(ws: ServerWebSocket<WsData>): void {
   send(ws, { type: 'pong', timestamp: Date.now() });
 }
 
-function handlePresence(ws: ServerWebSocket<WsData>, status: 'active' | 'idle'): void {
+function handlePresence(ws: ServerWebSocket<WsData>, status: 'active' | 'idle' | 'typing'): void {
   const { sessionId, userId, clientId } = ws.data;
   if (!sessionId) return;
 
@@ -175,6 +175,21 @@ function handlePrompt(
   log.info('Prompt queued (placeholder)', { sessionId, messageId, model, reasoningEffort, contentLength: content.length });
 }
 
+function handleTyping(ws: ServerWebSocket<WsData>, isTyping: boolean): void {
+  const { sessionId, userId, clientId } = ws.data;
+  if (!sessionId) return;
+
+  const presenceInfo: PresenceInfo = {
+    userId,
+    clientId,
+    status: isTyping ? 'typing' : 'active',
+    lastSeen: Date.now(),
+  };
+
+  roomManager.updatePresence(sessionId, presenceInfo);
+  roomManager.broadcast(sessionId, { type: 'presence_update', participant: presenceInfo });
+}
+
 function handleStop(ws: ServerWebSocket<WsData>): void {
   const { sessionId } = ws.data;
   if (!sessionId) {
@@ -205,6 +220,9 @@ export async function handleWsMessage(
         break;
       case 'presence':
         handlePresence(ws, message.status);
+        break;
+      case 'typing':
+        handleTyping(ws, message.isTyping);
         break;
       case 'fetch_history':
         await handleFetchHistory(ws, message.cursor, message.limit);

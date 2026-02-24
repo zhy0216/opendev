@@ -9,6 +9,8 @@ import { EventTimeline } from '../../components/session/EventTimeline';
 import { FollowUpPrompt } from '../../components/session/FollowUpPrompt';
 import { SessionSidebar } from '../../components/session/SessionSidebar';
 import { SandboxStatusBanner } from '../../components/session/SandboxStatusBanner';
+import { PresenceIndicator } from '../../components/session/PresenceIndicator';
+import { TypingIndicator } from '../../components/session/TypingIndicator';
 import type { SandboxStatus } from '@repo/types';
 
 export const Route = createFileRoute('/dashboard/session/$sessionId')({
@@ -70,6 +72,7 @@ function SessionViewPage() {
     isProcessing,
     sendPrompt,
     sendStop,
+    sendTyping,
   } = useSessionSocket(sessionId, wsToken);
 
   const rawSession = sessionResponse?.success ? sessionResponse.data : null;
@@ -98,6 +101,13 @@ function SessionViewPage() {
   const handleStop = useCallback(() => {
     sendStop();
   }, [sendStop]);
+
+  const handleTyping = useCallback(
+    (isTyping: boolean) => {
+      sendTyping(isTyping);
+    },
+    [sendTyping]
+  );
 
   // Loading state
   if (sessionLoading) {
@@ -184,6 +194,7 @@ function SessionViewPage() {
           </div>
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
+          <PresenceIndicator participants={participants} />
           <span
             className={cn(
               'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
@@ -232,11 +243,15 @@ function SessionViewPage() {
           {/* Event Timeline */}
           <EventTimeline events={events} isProcessing={isProcessing} />
 
+          {/* Typing Indicator */}
+          <TypingIndicator participants={participants} />
+
           {/* Follow-up Prompt */}
           <FollowUpPrompt
             onSubmit={handleFollowUp}
             disabled={!connected}
             isProcessing={isProcessing}
+            onTyping={handleTyping}
           />
         </div>
 

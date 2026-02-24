@@ -12,6 +12,7 @@ interface SessionSocketState {
 const MAX_RECONNECT_ATTEMPTS = 5;
 const PING_INTERVAL_MS = 30_000;
 const BASE_RECONNECT_DELAY_MS = 1_000;
+const IDLE_TIMEOUT_MS = 5 * 60 * 1_000; // 5 minutes
 
 export function useSessionSocket(sessionId: string, token: string | null) {
   const [state, setState] = useState<SessionSocketState>({
@@ -27,6 +28,8 @@ export function useSessionSocket(sessionId: string, token: string | null) {
   const reconnectAttemptRef = useRef(0);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const unmountedRef = useRef(false);
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isIdleRef = useRef(false);
 
   const clearPingInterval = useCallback(() => {
     if (pingIntervalRef.current) {
@@ -198,6 +201,43 @@ export function useSessionSocket(sessionId: string, token: string | null) {
     };
   }, [token, connect, clearPingInterval, clearReconnectTimeout]);
 
+  // Idle detection
+  useEffect(() => {
+    const resetIdleTimer = () => {
+      if (isIdleRef.current) {
+        isIdleRef.current = false;
+        send({ type: 'presence', status: 'active' });
+      }
+
+      if (idleTimerRef.current) {
+        clearTimeout(idleTimerRef.current);
+      }
+
+      idleTimerRef.current = setTimeout(() => {
+        isIdleRef.current = true;
+        send({ type: 'presence', status: 'idle' });
+      }, IDLE_TIMEOUT_MS);
+    };
+
+    const activityEvents = ['mousemove', 'keypress', 'mousedown', 'touchstart', 'scroll'];
+    for (const event of activityEvents) {
+      window.addEventListener(event, resetIdleTimer, { passive: true });
+    }
+
+    // Start the idle timer
+    resetIdleTimer();
+
+    return () => {
+      for (const event of activityEvents) {
+        window.removeEventListener(event, resetIdleTimer);
+      }
+      if (idleTimerRef.current) {
+        clearTimeout(idleTimerRef.current);
+        idleTimerRef.current = null;
+      }
+    };
+  }, [send]);
+
   // Send helpers
   const sendPrompt = useCallback(
     (content: string, model?: string, reasoningEffort?: string) => {
@@ -211,8 +251,15 @@ export function useSessionSocket(sessionId: string, token: string | null) {
   }, [send]);
 
   const sendPresence = useCallback(
-    (status: 'active' | 'idle') => {
+    (status: 'active' | 'idle' | 'typing') => {
       send({ type: 'presence', status });
+    },
+    [send]
+  );
+
+  const sendTyping = useCallback(
+    (isTyping: boolean) => {
+      send({ type: 'typing', isTyping });
     },
     [send]
   );
@@ -229,6 +276,7 @@ export function useSessionSocket(sessionId: string, token: string | null) {
     sendPrompt,
     sendStop,
     sendPresence,
+    sendTyping,
     fetchHistory,
   };
 }

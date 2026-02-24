@@ -1,25 +1,88 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { cn } from '../../lib/utils';
 
 interface FollowUpPromptProps {
   onSubmit: (content: string) => void;
   disabled?: boolean;
   isProcessing?: boolean;
+  onTyping?: (isTyping: boolean) => void;
 }
+
+const TYPING_DEBOUNCE_MS = 2_000;
 
 export function FollowUpPrompt({
   onSubmit,
   disabled = false,
   isProcessing = false,
+  onTyping,
 }: FollowUpPromptProps) {
   const [value, setValue] = useState('');
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isTypingRef = useRef(false);
+
+  // Cleanup typing timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleTypingStart = useCallback(() => {
+    if (!isTypingRef.current) {
+      isTypingRef.current = true;
+      onTyping?.(true);
+    }
+
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Set new timeout to stop typing after debounce period
+    typingTimeoutRef.current = setTimeout(() => {
+      isTypingRef.current = false;
+      onTyping?.(false);
+    }, TYPING_DEBOUNCE_MS);
+  }, [onTyping]);
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setValue(e.target.value);
+      if (e.target.value.length > 0) {
+        handleTypingStart();
+      } else {
+        // Cleared the input, stop typing
+        if (isTypingRef.current) {
+          isTypingRef.current = false;
+          onTyping?.(false);
+          if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+            typingTimeoutRef.current = null;
+          }
+        }
+      }
+    },
+    [handleTypingStart, onTyping]
+  );
 
   const handleSubmit = useCallback(() => {
     const trimmed = value.trim();
     if (!trimmed || disabled) return;
     onSubmit(trimmed);
     setValue('');
-  }, [value, disabled, onSubmit]);
+
+    // Stop typing indicator on submit
+    if (isTypingRef.current) {
+      isTypingRef.current = false;
+      onTyping?.(false);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+    }
+  }, [value, disabled, onSubmit, onTyping]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -36,7 +99,7 @@ export function FollowUpPrompt({
       <div className="flex items-end gap-2">
         <textarea
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={handleChange}
           onKeyDown={handleKeyDown}
           disabled={disabled}
           placeholder={
