@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { getContainer, IDatabase } from '@repo/di';
+import { getContainer, IDatabase, IEncryptionService } from '@repo/di';
 import { createAuth, IAuth } from '@repo/auth';
 import {
   UserRepository,
@@ -9,7 +9,7 @@ import {
   OrganizationRepository,
   IOrganizationRepository,
 } from '@repo/repository';
-import { EmailService, IEmailService } from '@repo/service';
+import { EmailService, IEmailService, EncryptionService } from '@repo/service';
 import { CreateProjectUseCase, ICreateProjectUseCase } from '@repo/use-case';
 import { createDb } from '@repo/db';
 import { env } from '@repo/env';
@@ -47,6 +47,7 @@ export function initializeContainer() {
 
   // Bind services
   container.bind(IEmailService).to(EmailService);
+  container.bind(IEncryptionService).to(EncryptionService);
 
   // Bind use cases
   container.bind(ICreateProjectUseCase).to(CreateProjectUseCase);

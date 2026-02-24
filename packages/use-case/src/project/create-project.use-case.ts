@@ -7,6 +7,7 @@ export interface CreateProjectInput {
   name: string;
   url: string;
   userId: string;
+  organizationId?: string;
 }
 
 export interface CreateProjectOutput {
@@ -30,6 +31,7 @@ export class CreateProjectUseCase
     const project = await this.projectRepository.create({
       name: input.name,
       url: input.url,
+      organizationId: input.organizationId,
     });
 
     await this.projectRepository.addUser({

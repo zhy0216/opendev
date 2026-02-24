@@ -13,6 +13,8 @@ export const env = createEnv({
     // Trigger.dev configuration
     TRIGGER_SECRET_KEY: z.string().optional(),
     TRIGGER_PROJECT_REF: z.string().optional(),
+    // Encryption
+    TOKEN_ENCRYPTION_KEY: z.string().min(64, 'TOKEN_ENCRYPTION_KEY must be at least 64 characters (32-byte hex)').default('0'.repeat(64)),
     // Logging configuration
     LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).optional(),
   },

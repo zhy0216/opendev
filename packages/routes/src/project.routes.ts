@@ -5,11 +5,17 @@ import { IProjectRepository, type ProjectRepository, type Project } from '@repo/
 import { ICreateProjectUseCase, type CreateProjectUseCase } from '@repo/use-case';
 import type { ResponseType } from '@repo/types';
 
-const list = protectedProcedure.handler(async ({ context }): Promise<ResponseType<Project[]>> => {
-  const projectRepo = getContainer().get<ProjectRepository>(IProjectRepository);
-  const projects = await projectRepo.findByUserId(context.user.id);
-  return { success: true, data: projects };
-});
+const list = protectedProcedure
+  .input(
+    z.object({
+      organizationId: z.string().uuid().optional(),
+    }).optional()
+  )
+  .handler(async ({ input, context }): Promise<ResponseType<Project[]>> => {
+    const projectRepo = getContainer().get<ProjectRepository>(IProjectRepository);
+    const projects = await projectRepo.findByUserId(context.user.id, input?.organizationId);
+    return { success: true, data: projects };
+  });
 
 const get = protectedProcedure
   .input(projectIdSchema)
@@ -31,6 +37,7 @@ const create = protectedProcedure
     z.object({
       name: z.string().min(1, 'Name is required'),
       url: z.string().url('Must be a valid URL'),
+      organizationId: z.string().uuid().optional(),
     })
   )
   .handler(async ({ input, context }): Promise<ResponseType<Project>> => {
@@ -42,6 +49,7 @@ const create = protectedProcedure
       name: input.name,
       url: input.url,
       userId: context.user.id,
+      organizationId: input.organizationId,
     });
 
     return { success: true, data: result.project };
