@@ -24,6 +24,8 @@ import {
   IModelPreferenceRepository,
   IntegrationSettingRepository,
   IIntegrationSettingRepository,
+  SandboxRepository,
+  ISandboxRepository,
 } from '@repo/repository';
 import {
   EmailService,
@@ -33,6 +35,12 @@ import {
   IGitHubService,
   InternalAuthService,
   IInternalAuthService,
+  SandboxManager,
+  ISandboxManager,
+  SandboxLifecycleManager,
+  ISandboxLifecycleManager,
+  SandboxBridge,
+  ISandboxBridge,
 } from '@repo/service';
 import {
   CreateProjectUseCase,
@@ -83,12 +91,16 @@ export function initializeContainer() {
   container.bind(ISecretRepository).to(SecretRepository);
   container.bind(IModelPreferenceRepository).to(ModelPreferenceRepository);
   container.bind(IIntegrationSettingRepository).to(IntegrationSettingRepository);
+  container.bind(ISandboxRepository).to(SandboxRepository);
 
   // Bind services
   container.bind(IEmailService).to(EmailService);
   container.bind(IEncryptionService).to(EncryptionService);
   container.bind(IGitHubService).to(GitHubService);
   container.bind(IInternalAuthService).to(InternalAuthService);
+  container.bind(ISandboxManager).to(SandboxManager);
+  container.bind(ISandboxLifecycleManager).to(SandboxLifecycleManager);
+  container.bind(ISandboxBridge).to(SandboxBridge);
 
   // Bind use cases
   container.bind(ICreateProjectUseCase).to(CreateProjectUseCase);

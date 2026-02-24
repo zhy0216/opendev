@@ -17,6 +17,8 @@ import {
   ISessionArtifactRepository,
   type SessionArtifactRepository,
   type SessionArtifact,
+  ISandboxRepository,
+  type SandboxRepository,
 } from '@repo/repository';
 import {
   ICreateSessionUseCase,
@@ -26,9 +28,10 @@ import {
   type QueuePromptUseCase,
   type QueuePromptOutput,
 } from '@repo/use-case';
-import type { ResponseType } from '@repo/types';
+import type { ResponseType, SandboxStatus } from '@repo/types';
 import { ORPCError } from '@orpc/server';
 import type { EncryptionService } from '@repo/service';
+import { ISandboxManager, type SandboxManager } from '@repo/service';
 
 const list = protectedProcedure
   .input(
@@ -382,6 +385,65 @@ const getWsToken = protectedProcedure
     }
   });
 
+const getSandboxStatus = protectedProcedure
+  .input(
+    z.object({
+      sessionId: z.string().uuid(),
+    })
+  )
+  .handler(async ({ input, context }): Promise<ResponseType<{ status: SandboxStatus }>> => {
+    try {
+      const participantRepo = getContainer().get<SessionParticipantRepository>(ISessionParticipantRepository);
+      const membership = await participantRepo.findMembership(input.sessionId, context.user.id);
+      if (!membership) {
+        throw new ORPCError('FORBIDDEN', { message: 'You are not a participant in this session' });
+      }
+
+      const sandboxRepo = getContainer().get<SandboxRepository>(ISandboxRepository);
+      const sandboxRecord = await sandboxRepo.findBySessionId(input.sessionId);
+
+      if (!sandboxRecord) {
+        return { success: true, data: { status: 'stopped' as SandboxStatus } };
+      }
+
+      return { success: true, data: { status: sandboxRecord.status as SandboxStatus } };
+    } catch (error) {
+      if (error instanceof ORPCError) throw error;
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to get sandbox status' };
+    }
+  });
+
+const stopSandbox = protectedProcedure
+  .input(
+    z.object({
+      sessionId: z.string().uuid(),
+    })
+  )
+  .handler(async ({ input, context }): Promise<ResponseType<boolean>> => {
+    try {
+      const participantRepo = getContainer().get<SessionParticipantRepository>(ISessionParticipantRepository);
+      const membership = await participantRepo.findMembership(input.sessionId, context.user.id);
+      if (!membership) {
+        throw new ORPCError('FORBIDDEN', { message: 'You are not a participant in this session' });
+      }
+
+      const sandboxRepo = getContainer().get<SandboxRepository>(ISandboxRepository);
+      const sandboxRecord = await sandboxRepo.findBySessionId(input.sessionId);
+
+      if (!sandboxRecord) {
+        return { success: false, error: 'No sandbox found for this session' };
+      }
+
+      const sandboxManager = getContainer().get<SandboxManager>(ISandboxManager);
+      await sandboxManager.stop(sandboxRecord.id);
+
+      return { success: true, data: true };
+    } catch (error) {
+      if (error instanceof ORPCError) throw error;
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to stop sandbox' };
+    }
+  });
+
 export const sessionRouter = {
   list,
   get,
@@ -396,4 +458,6 @@ export const sessionRouter = {
   addParticipant,
   getMessages,
   getWsToken,
+  getSandboxStatus,
+  stopSandbox,
 };

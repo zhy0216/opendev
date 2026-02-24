@@ -29,3 +29,5 @@ export { ModelPreferenceRepository, IModelPreferenceRepository } from './model-p
 export type { ModelPreference, ModelPreferenceCreate } from './model-preference.repository';
 export { IntegrationSettingRepository, IIntegrationSettingRepository } from './integration-setting.repository';
 export type { IntegrationSetting, IntegrationSettingCreate } from './integration-setting.repository';
+export { SandboxRepository, ISandboxRepository } from './sandbox.repository';
+export type { Sandbox, SandboxCreate, SandboxUpdate } from './sandbox.repository';
