@@ -6,6 +6,7 @@ import { sessionRouter } from './session.routes';
 import { secretRouter } from './secret.routes';
 import { modelPreferenceRouter } from './model-preference.routes';
 import { integrationSettingRouter } from './integration-setting.routes';
+import { repoImageRouter } from './repo-image.routes';
 
 export const appRouter = {
   project: projectRouter,
@@ -16,6 +17,7 @@ export const appRouter = {
   secret: secretRouter,
   modelPreference: modelPreferenceRouter,
   integrationSetting: integrationSettingRouter,
+  repoImage: repoImageRouter,
 };
 
 export type AppRouter = typeof appRouter;

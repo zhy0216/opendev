@@ -26,6 +26,8 @@ import {
   IIntegrationSettingRepository,
   SandboxRepository,
   ISandboxRepository,
+  RepoImageRepository,
+  IRepoImageRepository,
 } from '@repo/repository';
 import {
   EmailService,
@@ -98,6 +100,7 @@ export function initializeContainer() {
   container.bind(IModelPreferenceRepository).to(ModelPreferenceRepository);
   container.bind(IIntegrationSettingRepository).to(IntegrationSettingRepository);
   container.bind(ISandboxRepository).to(SandboxRepository);
+  container.bind(IRepoImageRepository).to(RepoImageRepository);
 
   // Bind services
   container.bind(IEmailService).to(EmailService);

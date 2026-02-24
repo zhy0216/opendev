@@ -29,5 +29,7 @@ export { ModelPreferenceRepository, IModelPreferenceRepository } from './model-p
 export type { ModelPreference, ModelPreferenceCreate } from './model-preference.repository';
 export { IntegrationSettingRepository, IIntegrationSettingRepository } from './integration-setting.repository';
 export type { IntegrationSetting, IntegrationSettingCreate } from './integration-setting.repository';
+export { RepoImageRepository, IRepoImageRepository } from './repo-image.repository';
+export type { RepoImage, RepoImageCreate, RepoImageUpdate } from './repo-image.repository';
 export { SandboxRepository, ISandboxRepository } from './sandbox.repository';
 export type { Sandbox, SandboxCreate, SandboxUpdate } from './sandbox.repository';
