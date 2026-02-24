@@ -7,3 +7,6 @@ export { InternalAuthService, IInternalAuthService } from './internal-auth.servi
 export { SandboxManager, ISandboxManager } from './sandbox/manager';
 export { SandboxLifecycleManager, ISandboxLifecycleManager } from './sandbox/lifecycle';
 export { SandboxBridge, ISandboxBridge } from './sandbox/bridge';
+export { SlackService, ISlackService } from './slack.service';
+export { GitHubBotService, IGitHubBotService } from './github-bot.service';
+export { LinearService, ILinearService } from './linear.service';

@@ -41,6 +41,12 @@ import {
   ISandboxLifecycleManager,
   SandboxBridge,
   ISandboxBridge,
+  SlackService,
+  ISlackService,
+  GitHubBotService,
+  IGitHubBotService,
+  LinearService,
+  ILinearService,
 } from '@repo/service';
 import {
   CreateProjectUseCase,
@@ -101,6 +107,9 @@ export function initializeContainer() {
   container.bind(ISandboxManager).to(SandboxManager);
   container.bind(ISandboxLifecycleManager).to(SandboxLifecycleManager);
   container.bind(ISandboxBridge).to(SandboxBridge);
+  container.bind(ISlackService).to(SlackService);
+  container.bind(IGitHubBotService).to(GitHubBotService);
+  container.bind(ILinearService).to(LinearService);
 
   // Bind use cases
   container.bind(ICreateProjectUseCase).to(CreateProjectUseCase);

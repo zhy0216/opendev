@@ -23,6 +23,13 @@ export const env = createEnv({
     GITHUB_CLIENT_ID: z.string().optional(),
     GITHUB_CLIENT_SECRET: z.string().optional(),
     GITHUB_WEBHOOK_SECRET: z.string().optional(),
+    // Slack configuration
+    SLACK_BOT_TOKEN: z.string().optional(),
+    SLACK_SIGNING_SECRET: z.string().optional(),
+    SLACK_APP_TOKEN: z.string().optional(),
+    // Linear configuration
+    LINEAR_API_KEY: z.string().optional(),
+    LINEAR_WEBHOOK_SECRET: z.string().optional(),
     // Logging configuration
     LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).optional(),
   },
