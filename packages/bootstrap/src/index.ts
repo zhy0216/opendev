@@ -20,6 +20,10 @@ import {
   ISessionArtifactRepository,
   SecretRepository,
   ISecretRepository,
+  ModelPreferenceRepository,
+  IModelPreferenceRepository,
+  IntegrationSettingRepository,
+  IIntegrationSettingRepository,
 } from '@repo/repository';
 import {
   EmailService,
@@ -77,6 +81,8 @@ export function initializeContainer() {
   container.bind(ISessionEventRepository).to(SessionEventRepository);
   container.bind(ISessionArtifactRepository).to(SessionArtifactRepository);
   container.bind(ISecretRepository).to(SecretRepository);
+  container.bind(IModelPreferenceRepository).to(ModelPreferenceRepository);
+  container.bind(IIntegrationSettingRepository).to(IntegrationSettingRepository);
 
   // Bind services
   container.bind(IEmailService).to(EmailService);

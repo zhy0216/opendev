@@ -25,3 +25,7 @@ export { SessionArtifactRepository, ISessionArtifactRepository } from './session
 export type { SessionArtifact, SessionArtifactCreate, SessionArtifactUpdate } from './session-artifact.repository';
 export { SecretRepository, ISecretRepository } from './secret.repository';
 export type { RepoSecret, RepoSecretCreate, GlobalSecret, GlobalSecretCreate } from './secret.repository';
+export { ModelPreferenceRepository, IModelPreferenceRepository } from './model-preference.repository';
+export type { ModelPreference, ModelPreferenceCreate } from './model-preference.repository';
+export { IntegrationSettingRepository, IIntegrationSettingRepository } from './integration-setting.repository';
+export type { IntegrationSetting, IntegrationSettingCreate } from './integration-setting.repository';
