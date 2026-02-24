@@ -5,6 +5,9 @@ import { env } from '@repo/env';
 import { getLogger, generateRequestId, runWithLogContextAsync } from '@repo/logger';
 import { getInject } from '@repo/di';
 import { IAuth, type Auth } from '@repo/auth';
+import type { WsData } from '@repo/types';
+import { roomManager } from './ws/room-manager';
+import { handleWsMessage, handleWsOpen, handleWsClose } from './ws/handlers';
 
 // Initialize DI container first (this also configures the logger)
 initializeContainer();
@@ -14,9 +17,9 @@ const { appRouter, createContext } = await import('@repo/routes');
 
 const handler = new RPCHandler(appRouter);
 
-const server = Bun.serve({
+const server = Bun.serve<WsData>({
   port: Number(env.SERVER_PORT),
-  async fetch(request) {
+  async fetch(request, server) {
     const url = new URL(request.url);
 
     // CORS preflight - no logging needed
@@ -28,6 +31,24 @@ const server = Bun.serve({
           'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         },
       });
+    }
+
+    // WebSocket upgrade for session connections
+    const wsMatch = url.pathname.match(/^\/ws\/sessions\/([^/]+)$/);
+    if (wsMatch) {
+      const sessionId = wsMatch[1];
+      const upgraded = server.upgrade(request, {
+        data: {
+          sessionId: sessionId,
+          userId: '',
+          clientId: '',
+          participantId: '',
+        } satisfies WsData,
+      });
+      if (upgraded) {
+        return undefined as unknown as Response;
+      }
+      return new Response('WebSocket upgrade failed', { status: 400 });
     }
 
     // Handle better-auth requests with logging context
@@ -48,9 +69,18 @@ const server = Bun.serve({
 
     // Health check
     if (url.pathname === '/health') {
-      return new Response(JSON.stringify({ status: 'ok' }), {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return new Response(
+        JSON.stringify({
+          status: 'ok',
+          ws: {
+            activeSessions: roomManager.getActiveSessionCount(),
+            connectedClients: roomManager.getClientCount(),
+          },
+        }),
+        {
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     // Handle oRPC requests (logging middleware is applied via procedures)
@@ -69,6 +99,17 @@ const server = Bun.serve({
     }
 
     return new Response('oRPC Server');
+  },
+  websocket: {
+    open(ws) {
+      handleWsOpen(ws);
+    },
+    async message(ws, message) {
+      await handleWsMessage(ws, message);
+    },
+    close(ws) {
+      handleWsClose(ws);
+    },
   },
 });
 

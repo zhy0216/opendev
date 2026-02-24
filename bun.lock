@@ -29,7 +29,10 @@
         "@repo/di": "workspace:*",
         "@repo/env": "workspace:*",
         "@repo/logger": "workspace:*",
+        "@repo/repository": "workspace:*",
         "@repo/routes": "workspace:*",
+        "@repo/service": "workspace:*",
+        "@repo/types": "workspace:*",
         "@types/bun": "latest",
         "typescript": "^5.9.3",
       },
@@ -1249,7 +1252,7 @@
 
     "@orpc/tanstack-query/@orpc/shared": ["@orpc/shared@1.13.4", "https://registry.npmmirror.com/@orpc/shared/-/shared-1.13.4.tgz", { "dependencies": { "radash": "^12.1.1", "type-fest": "^5.3.1" }, "peerDependencies": { "@opentelemetry/api": ">=1.9.0" }, "optionalPeers": ["@opentelemetry/api"] }, "sha512-TYt9rLG/BUkNQBeQ6C1tEiHS/Seb8OojHgj9GlvqyjHJhMZx5qjsIyTW6RqLPZJ4U2vgK6x4Her36+tlFCKJug=="],
 
-    "@repo/server/@orpc/server": ["@orpc/server@1.13.4", "https://registry.npmmirror.com/@orpc/server/-/server-1.13.4.tgz", { "dependencies": { "@orpc/client": "1.13.4", "@orpc/contract": "1.13.4", "@orpc/interop": "1.13.4", "@orpc/shared": "1.13.4", "@orpc/standard-server": "1.13.4", "@orpc/standard-server-aws-lambda": "1.13.4", "@orpc/standard-server-fastify": "1.13.4", "@orpc/standard-server-fetch": "1.13.4", "@orpc/standard-server-node": "1.13.4", "@orpc/standard-server-peer": "1.13.4", "cookie": "^1.1.1" }, "peerDependencies": { "crossws": ">=0.3.4", "ws": ">=8.18.1" }, "optionalPeers": ["crossws", "ws"] }, "sha512-noGqSP53KpH+2UvCpIoOCMPn5LY5UIB674ijzSZ2LYHT0EUNGpOgYd5Rab09VUAaG2NejwJc9VvWztFW3Op08w=="],
+    "@repo/server/@types/bun": ["@types/bun@1.3.9", "", { "dependencies": { "bun-types": "1.3.9" } }, "sha512-KQ571yULOdWJiMH+RIWIOZ7B2RXQGpL1YQrBtLIV3FqDcCu6FsbFUBwhdKUlCKUpS3PJDsHlJ1QKlpxoVR+xtw=="],
 
     "@repo/web/@orpc/server": ["@orpc/server@1.13.4", "https://registry.npmmirror.com/@orpc/server/-/server-1.13.4.tgz", { "dependencies": { "@orpc/client": "1.13.4", "@orpc/contract": "1.13.4", "@orpc/interop": "1.13.4", "@orpc/shared": "1.13.4", "@orpc/standard-server": "1.13.4", "@orpc/standard-server-aws-lambda": "1.13.4", "@orpc/standard-server-fastify": "1.13.4", "@orpc/standard-server-fetch": "1.13.4", "@orpc/standard-server-node": "1.13.4", "@orpc/standard-server-peer": "1.13.4", "cookie": "^1.1.1" }, "peerDependencies": { "crossws": ">=0.3.4", "ws": ">=8.18.1" }, "optionalPeers": ["crossws", "ws"] }, "sha512-noGqSP53KpH+2UvCpIoOCMPn5LY5UIB674ijzSZ2LYHT0EUNGpOgYd5Rab09VUAaG2NejwJc9VvWztFW3Op08w=="],
 
@@ -1353,23 +1356,7 @@
 
     "@orpc/tanstack-query/@orpc/shared/type-fest": ["type-fest@5.4.2", "https://registry.npmmirror.com/type-fest/-/type-fest-5.4.2.tgz", { "dependencies": { "tagged-tag": "^1.0.0" } }, "sha512-FLEenlVYf7Zcd34ISMLo3ZzRE1gRjY1nMDTp+bQRBiPsaKyIW8K3Zr99ioHDUgA9OGuGGJPyYpNcffGmBhJfGg=="],
 
-    "@repo/server/@orpc/server/@orpc/contract": ["@orpc/contract@1.13.4", "https://registry.npmmirror.com/@orpc/contract/-/contract-1.13.4.tgz", { "dependencies": { "@orpc/client": "1.13.4", "@orpc/shared": "1.13.4", "@standard-schema/spec": "^1.1.0", "openapi-types": "^12.1.3" } }, "sha512-TIxyaF67uOlihCRcasjHZxguZpbqfNK7aMrDLnhoufmQBE4OKvguNzmrOFHgsuM0OXoopX0Nuhun1ccaxKP10A=="],
-
-    "@repo/server/@orpc/server/@orpc/interop": ["@orpc/interop@1.13.4", "https://registry.npmmirror.com/@orpc/interop/-/interop-1.13.4.tgz", {}, "sha512-h8HWMSTSUYTtfN9ytGJD/MLMgWaUJOg8Z1Bq7fycnj74DVib0NLGIItoCquJkSzgZ7Otc+s1l0/2NPOViTyl9Q=="],
-
-    "@repo/server/@orpc/server/@orpc/shared": ["@orpc/shared@1.13.4", "https://registry.npmmirror.com/@orpc/shared/-/shared-1.13.4.tgz", { "dependencies": { "radash": "^12.1.1", "type-fest": "^5.3.1" }, "peerDependencies": { "@opentelemetry/api": ">=1.9.0" }, "optionalPeers": ["@opentelemetry/api"] }, "sha512-TYt9rLG/BUkNQBeQ6C1tEiHS/Seb8OojHgj9GlvqyjHJhMZx5qjsIyTW6RqLPZJ4U2vgK6x4Her36+tlFCKJug=="],
-
-    "@repo/server/@orpc/server/@orpc/standard-server": ["@orpc/standard-server@1.13.4", "https://registry.npmmirror.com/@orpc/standard-server/-/standard-server-1.13.4.tgz", { "dependencies": { "@orpc/shared": "1.13.4" } }, "sha512-ZOzgfVp6XUg+wVYw+gqesfRfGPtQbnBIrIiSnFMtZF+6ncmFJeF2Shc4RI2Guqc0Qz25juy8Ogo4tX3YqysOcg=="],
-
-    "@repo/server/@orpc/server/@orpc/standard-server-aws-lambda": ["@orpc/standard-server-aws-lambda@1.13.4", "https://registry.npmmirror.com/@orpc/standard-server-aws-lambda/-/standard-server-aws-lambda-1.13.4.tgz", { "dependencies": { "@orpc/shared": "1.13.4", "@orpc/standard-server": "1.13.4", "@orpc/standard-server-fetch": "1.13.4", "@orpc/standard-server-node": "1.13.4" } }, "sha512-iTJK6DiwLufVZtflLAxx5GCNQLo3NhNuQQgVtFavpx5xgCTuRb1dKNjHAoVCkF2lyqUFxv4AON2ZOSvuCCCzpw=="],
-
-    "@repo/server/@orpc/server/@orpc/standard-server-fastify": ["@orpc/standard-server-fastify@1.13.4", "https://registry.npmmirror.com/@orpc/standard-server-fastify/-/standard-server-fastify-1.13.4.tgz", { "dependencies": { "@orpc/shared": "1.13.4", "@orpc/standard-server": "1.13.4", "@orpc/standard-server-node": "1.13.4" }, "peerDependencies": { "fastify": ">=5.6.1" }, "optionalPeers": ["fastify"] }, "sha512-+E40iAD2IY/Vgg7FAE9aM2kQOL73LwJikkMiiD8G08kAEp1By9N7W5ejxXYiRcTVRF0j9vgvNSwhf4aSJmxp8g=="],
-
-    "@repo/server/@orpc/server/@orpc/standard-server-fetch": ["@orpc/standard-server-fetch@1.13.4", "https://registry.npmmirror.com/@orpc/standard-server-fetch/-/standard-server-fetch-1.13.4.tgz", { "dependencies": { "@orpc/shared": "1.13.4", "@orpc/standard-server": "1.13.4" } }, "sha512-/zmKwnuxfAXbppJpgr1CMnQX3ptPlYcDzLz1TaVzz9VG/Xg58Ov3YhabS2Oi1utLVhy5t4kaCppUducAvoKN+A=="],
-
-    "@repo/server/@orpc/server/@orpc/standard-server-node": ["@orpc/standard-server-node@1.13.4", "https://registry.npmmirror.com/@orpc/standard-server-node/-/standard-server-node-1.13.4.tgz", { "dependencies": { "@orpc/shared": "1.13.4", "@orpc/standard-server": "1.13.4", "@orpc/standard-server-fetch": "1.13.4" } }, "sha512-4sVTsoI1xBmKEqmcxPRGKqf/Egbtr83Lg8yLiUrt5YdjOAYENiahWyU51itL21VPdAdMFDoDdUC9aCpikyQCaw=="],
-
-    "@repo/server/@orpc/server/@orpc/standard-server-peer": ["@orpc/standard-server-peer@1.13.4", "https://registry.npmmirror.com/@orpc/standard-server-peer/-/standard-server-peer-1.13.4.tgz", { "dependencies": { "@orpc/shared": "1.13.4", "@orpc/standard-server": "1.13.4" } }, "sha512-UfqnTLqevjCKUk4cmImOG8cQUwANpV1dp9e9u2O1ki6BRBsg/zlXFg6G2N6wP0zr9ayIiO1d2qJdH55yl/1BNw=="],
+    "@repo/server/@types/bun/bun-types": ["bun-types@1.3.9", "", { "dependencies": { "@types/node": "*" } }, "sha512-+UBWWOakIP4Tswh0Bt0QD0alpTY8cb5hvgiYeWCMet9YukHbzuruIEeXC2D7nMJPB12kbh8C7XJykSexEqGKJg=="],
 
     "@repo/web/@orpc/server/@orpc/contract": ["@orpc/contract@1.13.4", "https://registry.npmmirror.com/@orpc/contract/-/contract-1.13.4.tgz", { "dependencies": { "@orpc/client": "1.13.4", "@orpc/shared": "1.13.4", "@standard-schema/spec": "^1.1.0", "openapi-types": "^12.1.3" } }, "sha512-TIxyaF67uOlihCRcasjHZxguZpbqfNK7aMrDLnhoufmQBE4OKvguNzmrOFHgsuM0OXoopX0Nuhun1ccaxKP10A=="],
 
@@ -1488,8 +1475,6 @@
     "vite/esbuild/@esbuild/win32-ia32": ["@esbuild/win32-ia32@0.25.12", "https://registry.npmmirror.com/@esbuild/win32-ia32/-/win32-ia32-0.25.12.tgz", { "os": "win32", "cpu": "ia32" }, "sha512-HkqnmmBoCbCwxUKKNPBixiWDGCpQGVsrQfJoVGYLPT41XWF8lHuE5N6WhVia2n4o5QK5M4tYr21827fNhi4byQ=="],
 
     "vite/esbuild/@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.12", "https://registry.npmmirror.com/@esbuild/win32-x64/-/win32-x64-0.25.12.tgz", { "os": "win32", "cpu": "x64" }, "sha512-alJC0uCZpTFrSL0CCDjcgleBXPnCrEAhTBILpeAp7M/OFgoqtAetfBzX0xM00MUsVVPpVjlPuMbREqnZCXaTnA=="],
-
-    "@repo/server/@orpc/server/@orpc/shared/type-fest": ["type-fest@5.4.2", "https://registry.npmmirror.com/type-fest/-/type-fest-5.4.2.tgz", { "dependencies": { "tagged-tag": "^1.0.0" } }, "sha512-FLEenlVYf7Zcd34ISMLo3ZzRE1gRjY1nMDTp+bQRBiPsaKyIW8K3Zr99ioHDUgA9OGuGGJPyYpNcffGmBhJfGg=="],
 
     "@repo/web/@orpc/server/@orpc/shared/type-fest": ["type-fest@5.4.2", "https://registry.npmmirror.com/type-fest/-/type-fest-5.4.2.tgz", { "dependencies": { "tagged-tag": "^1.0.0" } }, "sha512-FLEenlVYf7Zcd34ISMLo3ZzRE1gRjY1nMDTp+bQRBiPsaKyIW8K3Zr99ioHDUgA9OGuGGJPyYpNcffGmBhJfGg=="],
   }

@@ -16,3 +16,4 @@ export type Pagination = {
 };
 
 export * from "./models";
+export * from "./websocket";

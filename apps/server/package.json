@@ -20,6 +20,9 @@
     "@repo/routes": "workspace:*",
     "@repo/logger": "workspace:*",
     "@repo/di": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/repository": "workspace:*",
+    "@repo/service": "workspace:*",
     "@types/bun": "latest",
     "typescript": "^5.9.3"
   }

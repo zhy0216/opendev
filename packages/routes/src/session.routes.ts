@@ -1,6 +1,6 @@
 import { protectedProcedure } from './procedure';
 import { z } from 'zod';
-import { getContainer } from '@repo/di';
+import { getContainer, getInject, IEncryptionService } from '@repo/di';
 import {
   ISessionRepository,
   type SessionRepository,
@@ -28,6 +28,7 @@ import {
 } from '@repo/use-case';
 import type { ResponseType } from '@repo/types';
 import { ORPCError } from '@orpc/server';
+import type { EncryptionService } from '@repo/service';
 
 const list = protectedProcedure
   .input(
@@ -351,6 +352,36 @@ const getMessages = protectedProcedure
     }
   });
 
+const getWsToken = protectedProcedure
+  .input(
+    z.object({
+      sessionId: z.string().uuid(),
+    })
+  )
+  .handler(async ({ input, context }): Promise<ResponseType<{ token: string }>> => {
+    try {
+      const participantRepo = getContainer().get<SessionParticipantRepository>(ISessionParticipantRepository);
+      const membership = await participantRepo.findMembership(input.sessionId, context.user.id);
+      if (!membership) {
+        throw new ORPCError('FORBIDDEN', { message: 'You are not a participant in this session' });
+      }
+
+      const encryption = getInject<EncryptionService>(IEncryptionService);
+      const token = encryption.encrypt(
+        JSON.stringify({
+          sessionId: input.sessionId,
+          userId: context.user.id,
+          exp: Date.now() + 60000,
+        })
+      );
+
+      return { success: true, data: { token } };
+    } catch (error) {
+      if (error instanceof ORPCError) throw error;
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to generate WebSocket token' };
+    }
+  });
+
 export const sessionRouter = {
   list,
   get,
@@ -364,4 +395,5 @@ export const sessionRouter = {
   getParticipants,
   addParticipant,
   getMessages,
+  getWsToken,
 };
