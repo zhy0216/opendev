@@ -10,3 +10,5 @@ export type {
   NodeHandler,
   AgentLoopConfig,
 } from './types';
+
+export { BlueprintRunner } from './runner';
