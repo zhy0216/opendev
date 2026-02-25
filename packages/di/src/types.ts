@@ -23,3 +23,15 @@ export abstract class IInternalAuthService {
   abstract generateSandboxToken(): { token: string; hash: string };
   abstract verifySandboxToken(rawToken: string, storedHash: string): boolean;
 }
+
+// Blueprint
+export abstract class IExecuteTaskUseCase {
+  abstract execute(input: {
+    sessionId: string;
+    messageId: string;
+    prompt: string;
+    repoOwner?: string;
+    repoName?: string;
+    branchName?: string;
+  }): Promise<void>;
+}

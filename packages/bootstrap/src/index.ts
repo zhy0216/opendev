@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { getContainer, IDatabase, IEncryptionService } from '@repo/di';
+import { getContainer, IDatabase, IEncryptionService, IExecuteTaskUseCase } from '@repo/di';
 import { createAuth, IAuth } from '@repo/auth';
 import {
   UserRepository,
@@ -57,6 +57,7 @@ import {
   ICreateSessionUseCase,
   QueuePromptUseCase,
   IQueuePromptUseCase,
+  ExecuteTaskUseCase,
 } from '@repo/use-case';
 import { createDb } from '@repo/db';
 import { env } from '@repo/env';
@@ -118,6 +119,7 @@ export function initializeContainer() {
   container.bind(ICreateProjectUseCase).to(CreateProjectUseCase);
   container.bind(ICreateSessionUseCase).to(CreateSessionUseCase);
   container.bind(IQueuePromptUseCase).to(QueuePromptUseCase);
+  container.bind(IExecuteTaskUseCase).to(ExecuteTaskUseCase);
 
   logger.debug('Container initialization complete');
 

@@ -251,7 +251,9 @@
         "reflect-metadata": "^0.2.2",
       },
       "devDependencies": {
+        "@repo/blueprint": "workspace:*",
         "@repo/di": "workspace:*",
+        "@repo/logger": "workspace:*",
         "@repo/repository": "workspace:*",
         "@repo/service": "workspace:*",
         "typescript": "^5.7.0",
