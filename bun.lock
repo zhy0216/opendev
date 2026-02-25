@@ -83,6 +83,22 @@
         "typescript": "^5.7.0",
       },
     },
+    "packages/blueprint": {
+      "name": "@repo/blueprint",
+      "version": "0.0.1",
+      "dependencies": {
+        "inversify": "^7.0.0",
+        "reflect-metadata": "^0.2.2",
+      },
+      "devDependencies": {
+        "@repo/di": "workspace:*",
+        "@repo/logger": "workspace:*",
+        "@repo/repository": "workspace:*",
+        "@repo/service": "workspace:*",
+        "@repo/types": "workspace:*",
+        "typescript": "^5.7.0",
+      },
+    },
     "packages/bootstrap": {
       "name": "@repo/bootstrap",
       "version": "0.0.1",
@@ -550,6 +566,8 @@
     "@protobufjs/utf8": ["@protobufjs/utf8@1.1.0", "https://registry.npmmirror.com/@protobufjs/utf8/-/utf8-1.1.0.tgz", {}, "sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw=="],
 
     "@repo/auth": ["@repo/auth@workspace:packages/auth"],
+
+    "@repo/blueprint": ["@repo/blueprint@workspace:packages/blueprint"],
 
     "@repo/bootstrap": ["@repo/bootstrap@workspace:packages/bootstrap"],
 
