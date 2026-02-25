@@ -1,13 +1,13 @@
 import type { ServerWebSocket } from 'bun';
 import type { ClientMessage, WsData, ServerMessage, PresenceInfo } from '@repo/types';
-import { getInject } from '@repo/di';
-import { IEncryptionService } from '@repo/di';
+import { getInject, IEncryptionService, IExecuteTaskUseCase } from '@repo/di';
 import {
   ISessionParticipantRepository,
   type SessionParticipantRepository,
   ISessionEventRepository,
   type SessionEventRepository,
 } from '@repo/repository';
+import { IQueuePromptUseCase } from '@repo/use-case';
 import { createServiceLogger } from '@repo/logger';
 import { roomManager } from './room-manager';
 
@@ -153,26 +153,49 @@ async function handleFetchHistory(
   }
 }
 
-function handlePrompt(
+async function handlePrompt(
   ws: ServerWebSocket<WsData>,
   content: string,
   model?: string,
   reasoningEffort?: string
-): void {
-  const { sessionId } = ws.data;
+): Promise<void> {
+  const { sessionId, userId } = ws.data;
   if (!sessionId) {
     sendError(ws, 'NOT_SUBSCRIBED', 'You must subscribe to a session first');
     return;
   }
 
-  // Placeholder: generate a message ID and notify that prompt is queued
-  const messageId = crypto.randomUUID();
-  send(ws, { type: 'prompt_queued', messageId });
+  try {
+    // Queue the message via existing use case
+    const queuePrompt = getInject<IQueuePromptUseCase>(IQueuePromptUseCase);
+    const { message } = await queuePrompt.execute({
+      sessionId,
+      userId,
+      content,
+      source: 'web',
+      model,
+      reasoningEffort,
+    });
 
-  // Broadcast session status to all clients in the room
-  roomManager.broadcast(sessionId, { type: 'session_status', status: 'processing' });
+    send(ws, { type: 'prompt_queued', messageId: message.id });
+    roomManager.broadcast(sessionId, { type: 'session_status', status: 'processing' });
 
-  log.info('Prompt queued (placeholder)', { sessionId, messageId, model, reasoningEffort, contentLength: content.length });
+    // Execute blueprint in the background (don't await — fire and forget)
+    const executeTask = getInject<IExecuteTaskUseCase>(IExecuteTaskUseCase);
+    executeTask.execute({
+      sessionId,
+      messageId: message.id,
+      prompt: content,
+    }).then(() => {
+      roomManager.broadcast(sessionId, { type: 'session_status', status: 'completed' });
+    }).catch((err) => {
+      log.error('Blueprint execution failed', err instanceof Error ? err : new Error(String(err)));
+      roomManager.broadcast(sessionId, { type: 'session_status', status: 'failed' });
+    });
+  } catch (error) {
+    log.error('Failed to queue prompt', error instanceof Error ? error : new Error(String(error)));
+    sendError(ws, 'PROMPT_FAILED', 'Failed to queue prompt');
+  }
 }
 
 function handleTyping(ws: ServerWebSocket<WsData>, isTyping: boolean): void {
@@ -197,10 +220,9 @@ function handleStop(ws: ServerWebSocket<WsData>): void {
     return;
   }
 
-  // Placeholder: broadcast that session processing has stopped
+  // TODO: wire to BlueprintRunner.stop() when runner instance is accessible
   roomManager.broadcast(sessionId, { type: 'session_status', status: 'stopped' });
-
-  log.info('Stop requested (placeholder)', { sessionId });
+  log.info('Stop requested', { sessionId });
 }
 
 export async function handleWsMessage(
@@ -228,7 +250,7 @@ export async function handleWsMessage(
         await handleFetchHistory(ws, message.cursor, message.limit);
         break;
       case 'prompt':
-        handlePrompt(ws, message.content, message.model, message.reasoningEffort);
+        await handlePrompt(ws, message.content, message.model, message.reasoningEffort);
         break;
       case 'stop':
         handleStop(ws);

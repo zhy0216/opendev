@@ -33,6 +33,7 @@
         "@repo/routes": "workspace:*",
         "@repo/service": "workspace:*",
         "@repo/types": "workspace:*",
+        "@repo/use-case": "workspace:*",
         "@types/bun": "latest",
         "typescript": "^5.9.3",
       },
