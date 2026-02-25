@@ -11,6 +11,7 @@ export type {
   AgentLoopConfig,
 } from './types';
 export { BlueprintRunner } from './runner';
+export { BlueprintEventBridge } from './event-bridge';
 export { DEFAULT_TASK_BLUEPRINT } from './default-task.blueprint';
 export {
   HydrateContextHandler,
