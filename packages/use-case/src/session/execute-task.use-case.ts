@@ -58,11 +58,13 @@ export class ExecuteTaskUseCase
     }
     this.running.add(input.sessionId);
 
+    let sandbox: { sandboxId: string; authToken: string } | undefined;
+
     try {
       await this.messageRepo.updateStatus(input.messageId, 'processing');
 
       // Ensure sandbox exists
-      const sandbox = await this.sandboxManager.create(input.sessionId, {
+      sandbox = await this.sandboxManager.create(input.sessionId, {
         repoOwner: input.repoOwner ?? '',
         repoName: input.repoName ?? '',
         branch: input.branchName,
@@ -74,8 +76,7 @@ export class ExecuteTaskUseCase
 
       // Build exec function for deterministic handlers
       const exec = async (sandboxId: string, command: string) => {
-        log.info('Sandbox exec', { sandboxId, command });
-        return { exitCode: 0, stdout: '', stderr: '' };
+        return await this.sandboxManager.exec(sandboxId, command);
       };
 
       // Build sendPrompt function for agent handlers
@@ -142,6 +143,13 @@ export class ExecuteTaskUseCase
         nodeCount: execution.nodeExecutions.length,
       });
     } finally {
+      try {
+        if (sandbox?.sandboxId) {
+          await this.sandboxManager.stop(sandbox.sandboxId);
+        }
+      } catch (err) {
+        log.warn('Failed to stop sandbox', { error: err instanceof Error ? err.message : String(err) });
+      }
       this.running.delete(input.sessionId);
     }
   }
