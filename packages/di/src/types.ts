@@ -33,5 +33,16 @@ export abstract class IExecuteTaskUseCase {
     repoOwner?: string;
     repoName?: string;
     branchName?: string;
+    apiKey?: string;
   }): Promise<void>;
+}
+
+// Modal Sandbox
+export abstract class IModalClient {
+  abstract createSandbox(config: {
+    image: string;
+    encryptedPorts: number[];
+    idleTimeout?: number;
+  }): Promise<{ sandboxId: string; tunnelUrl: string }>;
+  abstract terminateSandbox(sandboxId: string): Promise<void>;
 }

@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { getContainer, IDatabase, IEncryptionService, IExecuteTaskUseCase } from '@repo/di';
+import { getContainer, IDatabase, IEncryptionService, IExecuteTaskUseCase, IModalClient } from '@repo/di';
 import { createAuth, IAuth } from '@repo/auth';
 import {
   UserRepository,
@@ -49,6 +49,7 @@ import {
   IGitHubBotService,
   LinearService,
   ILinearService,
+  ModalClient,
 } from '@repo/service';
 import {
   CreateProjectUseCase,
@@ -114,6 +115,7 @@ export function initializeContainer() {
   container.bind(ISlackService).to(SlackService);
   container.bind(IGitHubBotService).to(GitHubBotService);
   container.bind(ILinearService).to(LinearService);
+  container.bind(IModalClient).to(ModalClient);
 
   // Bind use cases
   container.bind(ICreateProjectUseCase).to(CreateProjectUseCase);

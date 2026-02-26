@@ -7,6 +7,7 @@ export interface SandboxConfig {
   secrets: Record<string, string>;
   model: string;
   reasoningEffort: string;
+  apiKey: string;
 }
 
 export type SandboxEventType =
@@ -14,6 +15,7 @@ export type SandboxEventType =
   | 'tool_result'
   | 'token'
   | 'error'
+  | 'done'
   | 'git_sync'
   | 'execution_complete'
   | 'user_message'

@@ -31,6 +31,7 @@ export interface ExecuteTaskInput {
   repoOwner?: string;
   repoName?: string;
   branchName?: string;
+  apiKey?: string;
 }
 
 @injectable()
@@ -57,29 +58,38 @@ export class ExecuteTaskUseCase
     }
     this.running.add(input.sessionId);
 
+    let sandbox: { sandboxId: string; authToken: string } | undefined;
+
     try {
       await this.messageRepo.updateStatus(input.messageId, 'processing');
 
       // Ensure sandbox exists
-      const sandbox = await this.sandboxManager.create(input.sessionId, {
+      sandbox = await this.sandboxManager.create(input.sessionId, {
         repoOwner: input.repoOwner ?? '',
         repoName: input.repoName ?? '',
         branch: input.branchName,
         secrets: {},
         model: 'anthropic/claude-sonnet-4-6',
         reasoningEffort: 'medium',
+        apiKey: input.apiKey ?? '',
       });
 
       // Build exec function for deterministic handlers
       const exec = async (sandboxId: string, command: string) => {
-        log.info('Sandbox exec', { sandboxId, command });
-        return { exitCode: 0, stdout: '', stderr: '' };
+        return await this.sandboxManager.exec(sandboxId, command);
       };
 
       // Build sendPrompt function for agent handlers
       const sendPrompt = async (sandboxId: string, prompt: string, messageId: string) => {
         log.info('Sandbox agent loop', { sandboxId, messageId, promptLength: prompt.length });
-        await this.sandboxManager.sendPrompt(sandboxId, prompt, messageId);
+        await this.sandboxManager.sendPrompt(sandboxId, prompt, messageId, async (event) => {
+          await this.eventRepo.create({
+            sessionId: input.sessionId,
+            messageId: input.messageId,
+            type: event.type,
+            data: event.data,
+          });
+        });
         return { success: true, filesTouched: [] as string[] };
       };
 
@@ -140,6 +150,13 @@ export class ExecuteTaskUseCase
         nodeCount: execution.nodeExecutions.length,
       });
     } finally {
+      try {
+        if (sandbox?.sandboxId) {
+          await this.sandboxManager.stop(sandbox.sandboxId);
+        }
+      } catch (err) {
+        log.warn('Failed to stop sandbox', { error: err instanceof Error ? err.message : String(err) });
+      }
       this.running.delete(input.sessionId);
     }
   }
