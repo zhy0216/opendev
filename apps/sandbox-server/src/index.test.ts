@@ -1,7 +1,5 @@
 import { describe, test, expect, afterAll, beforeAll } from 'bun:test';
-import type { Server } from 'bun';
-
-let server: Server;
+let server: ReturnType<typeof Bun.serve>;
 
 beforeAll(async () => {
   // Start the server on a random test port
