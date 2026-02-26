@@ -7,6 +7,7 @@ export interface SandboxConfig {
   secrets: Record<string, string>;
   model: string;
   reasoningEffort: string;
+  apiKey: string;
 }
 
 export type SandboxEventType =

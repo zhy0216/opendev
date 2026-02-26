@@ -31,6 +31,7 @@ export interface ExecuteTaskInput {
   repoOwner?: string;
   repoName?: string;
   branchName?: string;
+  apiKey?: string;
 }
 
 @injectable()
@@ -68,6 +69,7 @@ export class ExecuteTaskUseCase
         secrets: {},
         model: 'anthropic/claude-sonnet-4-6',
         reasoningEffort: 'medium',
+        apiKey: input.apiKey ?? '',
       });
 
       // Build exec function for deterministic handlers

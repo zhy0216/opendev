@@ -35,3 +35,13 @@ export abstract class IExecuteTaskUseCase {
     branchName?: string;
   }): Promise<void>;
 }
+
+// Modal Sandbox
+export abstract class IModalClient {
+  abstract createSandbox(config: {
+    image: string;
+    encryptedPorts: number[];
+    idleTimeout?: number;
+  }): Promise<{ sandboxId: string; tunnelUrl: string }>;
+  abstract terminateSandbox(sandboxId: string): Promise<void>;
+}
