@@ -10,3 +10,4 @@ export { SandboxBridge, ISandboxBridge } from './sandbox/bridge';
 export { SlackService, ISlackService } from './slack.service';
 export { GitHubBotService, IGitHubBotService } from './github-bot.service';
 export { LinearService, ILinearService } from './linear.service';
+export { ModalClient } from './sandbox/modal-client';
