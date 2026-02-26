@@ -33,6 +33,7 @@ export abstract class IExecuteTaskUseCase {
     repoOwner?: string;
     repoName?: string;
     branchName?: string;
+    apiKey?: string;
   }): Promise<void>;
 }
 

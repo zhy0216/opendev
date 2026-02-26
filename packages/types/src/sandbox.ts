@@ -15,6 +15,7 @@ export type SandboxEventType =
   | 'tool_result'
   | 'token'
   | 'error'
+  | 'done'
   | 'git_sync'
   | 'execution_complete'
   | 'user_message'

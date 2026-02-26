@@ -60,6 +60,8 @@ export class SandboxManager extends ISandboxManager {
       status: 'pending',
     });
 
+    let modalSandboxId: string | undefined;
+
     try {
       await sandboxRepo.updateStatus(sandboxRecord.id, 'starting');
 
@@ -73,6 +75,8 @@ export class SandboxManager extends ISandboxManager {
           setTimeout(() => reject(new Error('Sandbox creation timed out')), TIMEOUTS.SANDBOX_CREATE),
         ),
       ]);
+
+      modalSandboxId = modal.sandboxId;
 
       const bearerToken = internalAuth.generateToken();
       const initResponse = await fetch(`${modal.tunnelUrl}/init`, {
@@ -108,6 +112,13 @@ export class SandboxManager extends ISandboxManager {
 
       return { sandboxId: sandboxRecord.id, authToken: token };
     } catch (err) {
+      if (modalSandboxId) {
+        try {
+          await this.modalClient.terminateSandbox(modalSandboxId);
+        } catch {
+          log.warn('Failed to clean up Modal sandbox after init failure', { modalSandboxId });
+        }
+      }
       await sandboxRepo.updateStatus(sandboxRecord.id, 'error');
       log.error('Sandbox creation failed', err instanceof Error ? err : new Error(String(err)));
       throw err;
@@ -151,11 +162,12 @@ export class SandboxManager extends ISandboxManager {
     let lastEventTime = Date.now();
 
     while (true) {
+      let timeoutId: ReturnType<typeof setTimeout>;
       const readResult = await Promise.race([
-        reader.read(),
+        reader.read().then((r) => { clearTimeout(timeoutId); return r; }),
         new Promise<never>((_, reject) => {
           const timeoutMs = TIMEOUTS.PROMPT - (Date.now() - lastEventTime);
-          setTimeout(() => reject(new Error('Prompt timed out (no events received)')), Math.max(timeoutMs, 0));
+          timeoutId = setTimeout(() => reject(new Error('Prompt timed out (no events received)')), Math.max(timeoutMs, 0));
         }),
       ]);
       const { done, value } = readResult;

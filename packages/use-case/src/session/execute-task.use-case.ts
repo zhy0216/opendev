@@ -82,7 +82,14 @@ export class ExecuteTaskUseCase
       // Build sendPrompt function for agent handlers
       const sendPrompt = async (sandboxId: string, prompt: string, messageId: string) => {
         log.info('Sandbox agent loop', { sandboxId, messageId, promptLength: prompt.length });
-        await this.sandboxManager.sendPrompt(sandboxId, prompt, messageId);
+        await this.sandboxManager.sendPrompt(sandboxId, prompt, messageId, async (event) => {
+          await this.eventRepo.create({
+            sessionId: input.sessionId,
+            messageId: input.messageId,
+            type: event.type,
+            data: event.data,
+          });
+        });
         return { success: true, filesTouched: [] as string[] };
       };
 
