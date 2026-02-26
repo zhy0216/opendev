@@ -63,11 +63,16 @@ export class SandboxManager extends ISandboxManager {
     try {
       await sandboxRepo.updateStatus(sandboxRecord.id, 'starting');
 
-      const modal = await this.modalClient.createSandbox({
-        image: env.MODAL_SANDBOX_IMAGE ?? 'ghcr.io/your-org/acp-sandbox:latest',
-        encryptedPorts: [8080],
-        idleTimeout: 1800,
-      });
+      const modal = await Promise.race([
+        this.modalClient.createSandbox({
+          image: env.MODAL_SANDBOX_IMAGE ?? 'ghcr.io/your-org/acp-sandbox:latest',
+          encryptedPorts: [8080],
+          idleTimeout: 1800,
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Sandbox creation timed out')), TIMEOUTS.SANDBOX_CREATE),
+        ),
+      ]);
 
       const bearerToken = internalAuth.generateToken();
       const initResponse = await fetch(`${modal.tunnelUrl}/init`, {
@@ -146,13 +151,14 @@ export class SandboxManager extends ISandboxManager {
     let lastEventTime = Date.now();
 
     while (true) {
-      const timeoutMs = TIMEOUTS.PROMPT - (Date.now() - lastEventTime);
-      if (timeoutMs <= 0) {
-        reader.cancel();
-        throw new Error('Prompt timed out (no events received)');
-      }
-
-      const { done, value } = await reader.read();
+      const readResult = await Promise.race([
+        reader.read(),
+        new Promise<never>((_, reject) => {
+          const timeoutMs = TIMEOUTS.PROMPT - (Date.now() - lastEventTime);
+          setTimeout(() => reject(new Error('Prompt timed out (no events received)')), Math.max(timeoutMs, 0));
+        }),
+      ]);
+      const { done, value } = readResult;
       if (done) break;
 
       buffer += decoder.decode(value, { stream: true });
