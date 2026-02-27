@@ -1,44 +1,45 @@
-import { protectedProcedure } from './procedure';
-import { z } from 'zod';
-import { getContainer } from '@repo/di';
-import { IGitHubService, type GitHubService, type GitHubRepo } from '@repo/service';
-import type { ResponseType } from '@repo/types';
+import {
+	type GitHubRepo,
+	type GitHubService,
+	IGitHubService,
+} from "@repo/service";
+import type { ResponseType } from "@repo/types";
+import { z } from "zod";
+import { handleRoute, protectedProcedure, resolve } from "./procedure";
 
 const list = protectedProcedure
-  .input(z.object({ installationId: z.number() }))
-  .handler(async ({ input }): Promise<ResponseType<GitHubRepo[]>> => {
-    const githubService = getContainer().get<GitHubService>(IGitHubService);
-
-    try {
-      const repos = await githubService.listInstalledRepos(input.installationId);
-      return { success: true, data: repos };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to list repositories';
-      return { success: false, error: message };
-    }
-  });
+	.input(z.object({ installationId: z.number() }))
+	.handler(async ({ input }): Promise<ResponseType<GitHubRepo[]>> => {
+		return handleRoute(async () => {
+			const githubService = resolve<GitHubService>(IGitHubService);
+			const repos = await githubService.listInstalledRepos(
+				input.installationId,
+			);
+			return { success: true, data: repos };
+		}, "Failed to list repositories");
+	});
 
 const get = protectedProcedure
-  .input(
-    z.object({
-      owner: z.string(),
-      name: z.string(),
-      installationId: z.number(),
-    }),
-  )
-  .handler(async ({ input }): Promise<ResponseType<GitHubRepo>> => {
-    const githubService = getContainer().get<GitHubService>(IGitHubService);
-
-    try {
-      const repo = await githubService.getRepo(input.owner, input.name, input.installationId);
-      return { success: true, data: repo };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to get repository';
-      return { success: false, error: message };
-    }
-  });
+	.input(
+		z.object({
+			owner: z.string(),
+			name: z.string(),
+			installationId: z.number(),
+		}),
+	)
+	.handler(async ({ input }): Promise<ResponseType<GitHubRepo>> => {
+		return handleRoute(async () => {
+			const githubService = resolve<GitHubService>(IGitHubService);
+			const repo = await githubService.getRepo(
+				input.owner,
+				input.name,
+				input.installationId,
+			);
+			return { success: true, data: repo };
+		}, "Failed to get repository");
+	});
 
 export const repoRouter = {
-  list,
-  get,
+	list,
+	get,
 };

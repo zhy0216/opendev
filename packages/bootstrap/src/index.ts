@@ -1,129 +1,144 @@
-import 'reflect-metadata';
-import { getContainer, IDatabase, IEncryptionService, IExecuteTaskUseCase, IModalClient } from '@repo/di';
-import { createAuth, IAuth } from '@repo/auth';
+import "reflect-metadata";
+import { createAuth, IAuth } from "@repo/auth";
+import { createDb } from "@repo/db";
 import {
-  UserRepository,
-  IUserRepository,
-  ProjectRepository,
-  IProjectRepository,
-  OrganizationRepository,
-  IOrganizationRepository,
-  SessionRepository,
-  ISessionRepository,
-  SessionParticipantRepository,
-  ISessionParticipantRepository,
-  SessionMessageRepository,
-  ISessionMessageRepository,
-  SessionEventRepository,
-  ISessionEventRepository,
-  SessionArtifactRepository,
-  ISessionArtifactRepository,
-  SecretRepository,
-  ISecretRepository,
-  ModelPreferenceRepository,
-  IModelPreferenceRepository,
-  IntegrationSettingRepository,
-  IIntegrationSettingRepository,
-  SandboxRepository,
-  ISandboxRepository,
-  RepoImageRepository,
-  IRepoImageRepository,
-} from '@repo/repository';
+	getContainer,
+	IDatabase,
+	IEncryptionService,
+	IExecuteTaskUseCase,
+	IModalClient,
+} from "@repo/di";
+import { env } from "@repo/env";
+import { configureLogger, logger } from "@repo/logger";
 import {
-  EmailService,
-  IEmailService,
-  EncryptionService,
-  GitHubService,
-  IGitHubService,
-  InternalAuthService,
-  IInternalAuthService,
-  SandboxManager,
-  ISandboxManager,
-  SandboxLifecycleManager,
-  ISandboxLifecycleManager,
-  SandboxBridge,
-  ISandboxBridge,
-  SlackService,
-  ISlackService,
-  GitHubBotService,
-  IGitHubBotService,
-  LinearService,
-  ILinearService,
-  ModalClient,
-} from '@repo/service';
+	IIntegrationSettingRepository,
+	IModelPreferenceRepository,
+	IntegrationSettingRepository,
+	IOrganizationRepository,
+	IProjectRepository,
+	IRepoImageRepository,
+	ISandboxRepository,
+	ISecretRepository,
+	ISessionArtifactRepository,
+	ISessionEventRepository,
+	ISessionMessageRepository,
+	ISessionParticipantRepository,
+	ISessionRepository,
+	IUserRepository,
+	ModelPreferenceRepository,
+	OrganizationRepository,
+	ProjectRepository,
+	RepoImageRepository,
+	SandboxRepository,
+	SecretRepository,
+	SessionArtifactRepository,
+	SessionEventRepository,
+	SessionMessageRepository,
+	SessionParticipantRepository,
+	SessionRepository,
+	UserRepository,
+} from "@repo/repository";
 import {
-  CreateProjectUseCase,
-  ICreateProjectUseCase,
-  CreateSessionUseCase,
-  ICreateSessionUseCase,
-  QueuePromptUseCase,
-  IQueuePromptUseCase,
-  ExecuteTaskUseCase,
-} from '@repo/use-case';
-import { createDb } from '@repo/db';
-import { env } from '@repo/env';
-import { configureLogger, logger } from '@repo/logger';
+	EmailService,
+	EncryptionService,
+	GitHubBotService,
+	GitHubService,
+	IEmailService,
+	IGitHubBotService,
+	IGitHubService,
+	IInternalAuthService,
+	ILinearService,
+	InternalAuthService,
+	ISandboxBridge,
+	ISandboxLifecycleManager,
+	ISandboxManager,
+	ISlackService,
+	LinearService,
+	ModalClient,
+	SandboxBridge,
+	SandboxLifecycleManager,
+	SandboxManager,
+	SlackService,
+} from "@repo/service";
+import {
+	CreateProjectUseCase,
+	CreateSessionUseCase,
+	ExecuteTaskUseCase,
+	ICreateProjectUseCase,
+	ICreateSessionUseCase,
+	IQueuePromptUseCase,
+	QueuePromptUseCase,
+} from "@repo/use-case";
+
+// Each entry maps an abstract class token to its concrete implementation.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const bindings: [
+	abstract new (...args: any[]) => any,
+	new (...args: any[]) => any,
+][] = [
+	// Repositories
+	[IUserRepository, UserRepository],
+	[IProjectRepository, ProjectRepository],
+	[IOrganizationRepository, OrganizationRepository],
+	[ISessionRepository, SessionRepository],
+	[ISessionParticipantRepository, SessionParticipantRepository],
+	[ISessionMessageRepository, SessionMessageRepository],
+	[ISessionEventRepository, SessionEventRepository],
+	[ISessionArtifactRepository, SessionArtifactRepository],
+	[ISecretRepository, SecretRepository],
+	[IModelPreferenceRepository, ModelPreferenceRepository],
+	[IIntegrationSettingRepository, IntegrationSettingRepository],
+	[ISandboxRepository, SandboxRepository],
+	[IRepoImageRepository, RepoImageRepository],
+	// Services
+	[IEmailService, EmailService],
+	[IEncryptionService, EncryptionService],
+	[IGitHubService, GitHubService],
+	[IInternalAuthService, InternalAuthService],
+	[ISandboxManager, SandboxManager],
+	[ISandboxLifecycleManager, SandboxLifecycleManager],
+	[ISandboxBridge, SandboxBridge],
+	[ISlackService, SlackService],
+	[IGitHubBotService, GitHubBotService],
+	[ILinearService, LinearService],
+	[IModalClient, ModalClient],
+	// Use cases
+	[ICreateProjectUseCase, CreateProjectUseCase],
+	[ICreateSessionUseCase, CreateSessionUseCase],
+	[IQueuePromptUseCase, QueuePromptUseCase],
+	[IExecuteTaskUseCase, ExecuteTaskUseCase],
+];
 
 export function initializeContainer() {
-  // Configure logger with environment context
-  configureLogger({
-    context: {
-      env: env.NODE_ENV,
-      service: 'api-server',
-    },
-  });
+	configureLogger({
+		context: {
+			env: env.NODE_ENV,
+			service: "api-server",
+		},
+	});
 
-  logger
-    .withMetadata({
-      nodeEnv: env.NODE_ENV,
-      logLevel: env.LOG_LEVEL || 'auto',
-    })
-    .info('Initializing application container');
+	logger
+		.withMetadata({
+			nodeEnv: env.NODE_ENV,
+			logLevel: env.LOG_LEVEL || "auto",
+		})
+		.info("Initializing application container");
 
-  const container = getContainer();
+	const container = getContainer();
 
-  // Bind database
-  const db = createDb(env.DATABASE_URL);
-  container.bind(IDatabase).toConstantValue(db as any);
+	// Bind database
+	const db = createDb(env.DATABASE_URL);
+	container.bind(IDatabase).toConstantValue(db as any);
 
-  // Bind auth
-  container.bind(IAuth).toConstantValue(createAuth(db));
+	// Bind auth
+	container.bind(IAuth).toConstantValue(createAuth(db));
 
-  // Bind repositories
-  container.bind(IUserRepository).to(UserRepository);
-  container.bind(IProjectRepository).to(ProjectRepository);
-  container.bind(IOrganizationRepository).to(OrganizationRepository);
-  container.bind(ISessionRepository).to(SessionRepository);
-  container.bind(ISessionParticipantRepository).to(SessionParticipantRepository);
-  container.bind(ISessionMessageRepository).to(SessionMessageRepository);
-  container.bind(ISessionEventRepository).to(SessionEventRepository);
-  container.bind(ISessionArtifactRepository).to(SessionArtifactRepository);
-  container.bind(ISecretRepository).to(SecretRepository);
-  container.bind(IModelPreferenceRepository).to(ModelPreferenceRepository);
-  container.bind(IIntegrationSettingRepository).to(IntegrationSettingRepository);
-  container.bind(ISandboxRepository).to(SandboxRepository);
-  container.bind(IRepoImageRepository).to(RepoImageRepository);
+	// Bind all repositories, services, and use cases
+	for (const [token, implementation] of bindings) {
+		container.bind(token).to(implementation);
+	}
 
-  // Bind services
-  container.bind(IEmailService).to(EmailService);
-  container.bind(IEncryptionService).to(EncryptionService);
-  container.bind(IGitHubService).to(GitHubService);
-  container.bind(IInternalAuthService).to(InternalAuthService);
-  container.bind(ISandboxManager).to(SandboxManager);
-  container.bind(ISandboxLifecycleManager).to(SandboxLifecycleManager);
-  container.bind(ISandboxBridge).to(SandboxBridge);
-  container.bind(ISlackService).to(SlackService);
-  container.bind(IGitHubBotService).to(GitHubBotService);
-  container.bind(ILinearService).to(LinearService);
-  container.bind(IModalClient).to(ModalClient);
+	logger.debug("Container initialization complete");
 
-  // Bind use cases
-  container.bind(ICreateProjectUseCase).to(CreateProjectUseCase);
-  container.bind(ICreateSessionUseCase).to(CreateSessionUseCase);
-  container.bind(IQueuePromptUseCase).to(QueuePromptUseCase);
-  container.bind(IExecuteTaskUseCase).to(ExecuteTaskUseCase);
-
-  logger.debug('Container initialization complete');
-
-  return container;
+	return container;
 }

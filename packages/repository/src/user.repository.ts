@@ -1,9 +1,9 @@
 import 'reflect-metadata';
+import { type DbClient, user } from '@repo/db';
+import { getInject, IDatabase, ITransaction } from '@repo/di';
+import { and, type Column, eq, getTableColumns, type SQL } from 'drizzle-orm';
 import { inject, injectable, optional } from 'inversify';
-import { eq } from 'drizzle-orm';
-import { user, type DbClient } from '@repo/db';
 import type { BaseRepository } from './base.repository';
-import { ITransaction, IDatabase, getInject } from '@repo/di';
 
 export type User = typeof user.$inferSelect;
 export type UserCreate = Omit<typeof user.$inferInsert, 'createdAt' | 'updatedAt'>;
@@ -53,12 +53,23 @@ export class UserRepository
   }
 
   async findOne(filter: Partial<User>): Promise<User | undefined> {
-    const results = await this.findAll();
-    return results.find((u) =>
-      Object.entries(filter).every(
-        ([key, value]) => u[key as keyof User] === value
-      )
-    );
+    const columns = getTableColumns(user);
+    const conditions: SQL[] = [];
+    for (const [key, value] of Object.entries(filter)) {
+      const column = columns[key as keyof typeof columns] as Column | undefined;
+      if (column) {
+        conditions.push(eq(column, value as string));
+      }
+    }
+
+    if (conditions.length === 0) return undefined;
+
+    const result = await this.dbClient
+      .select()
+      .from(user)
+      .where(and(...conditions))
+      .limit(1);
+    return result[0];
   }
 
   async create(data: UserCreate): Promise<User> {

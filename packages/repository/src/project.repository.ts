@@ -1,9 +1,9 @@
 import 'reflect-metadata';
+import { type DbClient, project, projectUser } from '@repo/db';
+import { getInject, IDatabase, ITransaction } from '@repo/di';
+import { and, type Column, eq, getTableColumns, type SQL } from 'drizzle-orm';
 import { inject, injectable, optional } from 'inversify';
-import { eq, and } from 'drizzle-orm';
-import { project, projectUser, type DbClient } from '@repo/db';
 import type { BaseRepository } from './base.repository';
-import { ITransaction, IDatabase, getInject } from '@repo/di';
 
 export type Project = typeof project.$inferSelect;
 export type ProjectCreate = { id?: string; name: string; url: string; organizationId?: string | null };
@@ -70,12 +70,23 @@ export class ProjectRepository
   }
 
   async findOne(filter: Partial<Project>): Promise<Project | undefined> {
-    const results = await this.findAll();
-    return results.find((p) =>
-      Object.entries(filter).every(
-        ([key, value]) => p[key as keyof Project] === value
-      )
-    );
+    const columns = getTableColumns(project);
+    const conditions: SQL[] = [];
+    for (const [key, value] of Object.entries(filter)) {
+      const column = columns[key as keyof typeof columns] as Column | undefined;
+      if (column) {
+        conditions.push(eq(column, value as string));
+      }
+    }
+
+    if (conditions.length === 0) return undefined;
+
+    const result = await this.dbClient
+      .select()
+      .from(project)
+      .where(and(...conditions))
+      .limit(1);
+    return result[0];
   }
 
   async create(data: ProjectCreate): Promise<Project> {

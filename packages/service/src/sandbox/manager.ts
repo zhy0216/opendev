@@ -1,10 +1,10 @@
 import 'reflect-metadata';
-import { inject, injectable } from 'inversify';
 import { getInject, IInternalAuthService, IModalClient } from '@repo/di';
-import { ISandboxRepository, type SandboxRepository } from '@repo/repository';
-import type { SandboxConfig, SandboxStatus, ExecResult, SandboxEvent } from '@repo/types';
-import { createServiceLogger } from '@repo/logger';
 import { env } from '@repo/env';
+import { createServiceLogger } from '@repo/logger';
+import { ISandboxRepository, type SandboxRepository } from '@repo/repository';
+import type { ExecResult, SandboxConfig, SandboxEvent, SandboxStatus } from '@repo/types';
+import { inject, injectable } from 'inversify';
 
 const log = createServiceLogger('SandboxManager');
 
@@ -37,6 +37,17 @@ interface ActiveSandbox {
   bearerToken: string;
 }
 
+/**
+ * Runs an async cleanup action, logging a warning on failure instead of throwing.
+ */
+async function safeCleanup(action: () => Promise<void>, warningMessage: string, context: Record<string, unknown>): Promise<void> {
+  try {
+    await action();
+  } catch {
+    log.warn(warningMessage, context);
+  }
+}
+
 @injectable()
 export class SandboxManager extends ISandboxManager {
   private activeSandboxes = new Map<string, ActiveSandbox>();
@@ -46,6 +57,14 @@ export class SandboxManager extends ISandboxManager {
     private readonly modalClient: IModalClient,
   ) {
     super();
+  }
+
+  private requireActiveSandbox(sandboxId: string): ActiveSandbox {
+    const active = this.activeSandboxes.get(sandboxId);
+    if (!active) {
+      throw new Error(`Sandbox not found: ${sandboxId}`);
+    }
+    return active;
   }
 
   async create(sessionId: string, config: SandboxConfig): Promise<{ sandboxId: string; authToken: string }> {
@@ -113,11 +132,11 @@ export class SandboxManager extends ISandboxManager {
       return { sandboxId: sandboxRecord.id, authToken: token };
     } catch (err) {
       if (modalSandboxId) {
-        try {
-          await this.modalClient.terminateSandbox(modalSandboxId);
-        } catch {
-          log.warn('Failed to clean up Modal sandbox after init failure', { modalSandboxId });
-        }
+        await safeCleanup(
+          () => this.modalClient.terminateSandbox(modalSandboxId!),
+          'Failed to clean up Modal sandbox after init failure',
+          { modalSandboxId },
+        );
       }
       await sandboxRepo.updateStatus(sandboxRecord.id, 'error');
       log.error('Sandbox creation failed', err instanceof Error ? err : new Error(String(err)));
@@ -131,10 +150,7 @@ export class SandboxManager extends ISandboxManager {
     messageId: string,
     onEvent?: (event: SandboxEvent) => void,
   ): Promise<void> {
-    const active = this.activeSandboxes.get(sandboxId);
-    if (!active) {
-      throw new Error(`Sandbox not found: ${sandboxId}`);
-    }
+    const active = this.requireActiveSandbox(sandboxId);
 
     log.info('Sending prompt to sandbox', { sandboxId, messageId, promptLength: prompt.length });
 
@@ -208,10 +224,7 @@ export class SandboxManager extends ISandboxManager {
   }
 
   async exec(sandboxId: string, command: string): Promise<ExecResult> {
-    const active = this.activeSandboxes.get(sandboxId);
-    if (!active) {
-      throw new Error(`Sandbox not found: ${sandboxId}`);
-    }
+    const active = this.requireActiveSandbox(sandboxId);
 
     log.info('Executing command in sandbox', { sandboxId, command });
 
@@ -238,21 +251,21 @@ export class SandboxManager extends ISandboxManager {
     const active = this.activeSandboxes.get(sandboxId);
 
     if (active) {
-      try {
-        await fetch(`${active.tunnelUrl}/terminate`, {
+      await safeCleanup(
+        () => fetch(`${active.tunnelUrl}/terminate`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${active.bearerToken}` },
           signal: AbortSignal.timeout(5000),
-        });
-      } catch {
-        log.warn('Failed to send terminate to sandbox', { sandboxId });
-      }
+        }).then(() => undefined),
+        'Failed to send terminate to sandbox',
+        { sandboxId },
+      );
 
-      try {
-        await this.modalClient.terminateSandbox(active.modalSandboxId);
-      } catch {
-        log.warn('Failed to terminate Modal sandbox', { sandboxId });
-      }
+      await safeCleanup(
+        () => this.modalClient.terminateSandbox(active.modalSandboxId),
+        'Failed to terminate Modal sandbox',
+        { sandboxId },
+      );
 
       this.activeSandboxes.delete(sandboxId);
     }
