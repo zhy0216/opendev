@@ -7,6 +7,7 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { project } from "./project.schema";
 import { user } from "./user.schema";
 
 export const repoImage = pgTable(
@@ -23,6 +24,9 @@ export const repoImage = pgTable(
 		createdBy: text("createdBy")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
+		projectId: uuid("projectId").references(() => project.id, {
+			onDelete: "cascade",
+		}),
 		createdAt: timestamp("createdAt", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -37,5 +41,9 @@ export const repoImageRelations = relations(repoImage, ({ one }) => ({
 	creator: one(user, {
 		fields: [repoImage.createdBy],
 		references: [user.id],
+	}),
+	project: one(project, {
+		fields: [repoImage.projectId],
+		references: [project.id],
 	}),
 }));

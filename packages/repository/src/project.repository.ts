@@ -6,7 +6,7 @@ import { inject, injectable, optional } from 'inversify';
 import type { BaseRepository } from './base.repository';
 
 export type Project = typeof project.$inferSelect;
-export type ProjectCreate = { id?: string; name: string; url: string; organizationId?: string | null };
+export type ProjectCreate = { id?: string; name: string; repoOwner: string; repoName: string; repoId?: string | null; defaultBranch?: string; organizationId?: string | null };
 export type ProjectUpdate = Partial<Omit<ProjectCreate, 'id'>>;
 
 export type ProjectUser = typeof projectUser.$inferSelect;
@@ -92,7 +92,7 @@ export class ProjectRepository
   async create(data: ProjectCreate): Promise<Project> {
     const result = await this.dbClient
       .insert(project)
-      .values({ name: data.name, url: data.url, organizationId: data.organizationId })
+      .values({ name: data.name, repoOwner: data.repoOwner, repoName: data.repoName, repoId: data.repoId, defaultBranch: data.defaultBranch, organizationId: data.organizationId })
       .returning();
     return result[0];
   }

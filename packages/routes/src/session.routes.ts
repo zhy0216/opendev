@@ -57,6 +57,7 @@ const list = protectedProcedure
 		z
 			.object({
 				status: z.string().optional(),
+				projectId: z.string().uuid().optional(),
 				limit: z.number().int().positive().optional(),
 				offset: z.number().int().nonnegative().optional(),
 			})
@@ -67,6 +68,7 @@ const list = protectedProcedure
 			const sessionRepo = resolve<SessionRepository>(ISessionRepository);
 			const sessions = await sessionRepo.findByUserId(context.user.id, {
 				status: input?.status,
+				projectId: input?.projectId,
 				limit: input?.limit,
 				offset: input?.offset,
 			});
@@ -98,8 +100,8 @@ const create = protectedProcedure
 	.input(
 		z.object({
 			name: z.string().min(1, "Name is required"),
-			repoOwner: z.string().optional(),
-			repoName: z.string().optional(),
+			projectId: z.string().uuid(),
+			branchName: z.string().optional(),
 			model: z.string().optional(),
 			reasoningEffort: z.string().optional(),
 			organizationId: z.string().uuid().optional(),
@@ -114,8 +116,8 @@ const create = protectedProcedure
 
 				const result = await createSessionUseCase.execute({
 					name: input.name,
-					repoOwner: input.repoOwner,
-					repoName: input.repoName,
+					projectId: input.projectId,
+					branchName: input.branchName,
 					model: input.model ?? "claude-sonnet-4-20250514",
 					reasoningEffort: input.reasoningEffort,
 					userId: context.user.id,

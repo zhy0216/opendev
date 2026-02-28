@@ -5,13 +5,15 @@ import {
   type Session,
   type SessionParticipant,
   ISessionParticipantRepository,
+  IProjectRepository,
+  type ProjectRepository,
 } from '@repo/repository';
 import type { UseCase } from '../base.use-case';
 
 export interface CreateSessionInput {
   name: string;
-  repoOwner?: string;
-  repoName?: string;
+  projectId: string;
+  branchName?: string;
   model: string;
   reasoningEffort?: string;
   userId: string;
@@ -35,18 +37,28 @@ export class CreateSessionUseCase
     @inject(ISessionRepository)
     private readonly sessionRepository: ISessionRepository,
     @inject(ISessionParticipantRepository)
-    private readonly participantRepository: ISessionParticipantRepository
+    private readonly participantRepository: ISessionParticipantRepository,
+    @inject(IProjectRepository)
+    private readonly projectRepository: ProjectRepository
   ) {}
 
   async execute(input: CreateSessionInput): Promise<CreateSessionOutput> {
+    const project = await this.projectRepository.findById(input.projectId);
+    if (!project) {
+      throw new Error(`Project not found: ${input.projectId}`);
+    }
+
     const session = await this.sessionRepository.create({
       name: input.name,
-      repoOwner: input.repoOwner,
-      repoName: input.repoName,
+      projectId: input.projectId,
+      repoOwner: project.repoOwner,
+      repoName: project.repoName,
+      repoId: project.repoId,
+      branchName: input.branchName ?? project.defaultBranch,
       model: input.model,
       reasoningEffort: input.reasoningEffort,
       createdBy: input.userId,
-      organizationId: input.organizationId,
+      organizationId: input.organizationId ?? project.organizationId,
     });
 
     const participant = await this.participantRepository.add({

@@ -5,7 +5,10 @@ import type { UseCase } from '../base.use-case';
 
 export interface CreateProjectInput {
   name: string;
-  url: string;
+  repoOwner: string;
+  repoName: string;
+  repoId?: string;
+  defaultBranch?: string;
   userId: string;
   organizationId?: string;
 }
@@ -30,7 +33,10 @@ export class CreateProjectUseCase
   async execute(input: CreateProjectInput): Promise<CreateProjectOutput> {
     const project = await this.projectRepository.create({
       name: input.name,
-      url: input.url,
+      repoOwner: input.repoOwner,
+      repoName: input.repoName,
+      repoId: input.repoId,
+      defaultBranch: input.defaultBranch,
       organizationId: input.organizationId,
     });
 

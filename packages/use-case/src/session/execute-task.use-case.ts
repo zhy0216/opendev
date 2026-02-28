@@ -4,6 +4,8 @@ import { IExecuteTaskUseCase } from '@repo/di';
 import {
   ISessionMessageRepository,
   ISessionEventRepository,
+  ISessionRepository,
+  type SessionRepository,
 } from '@repo/repository';
 import { ISandboxManager } from '@repo/service';
 import {
@@ -28,9 +30,6 @@ export interface ExecuteTaskInput {
   sessionId: string;
   messageId: string;
   prompt: string;
-  repoOwner?: string;
-  repoName?: string;
-  branchName?: string;
   apiKey?: string;
 }
 
@@ -48,6 +47,8 @@ export class ExecuteTaskUseCase
     private readonly eventRepo: ISessionEventRepository,
     @inject(ISandboxManager)
     private readonly sandboxManager: ISandboxManager,
+    @inject(ISessionRepository)
+    private readonly sessionRepo: SessionRepository,
   ) {
     super();
   }
@@ -61,16 +62,21 @@ export class ExecuteTaskUseCase
     let sandbox: { sandboxId: string; authToken: string } | undefined;
 
     try {
+      const session = await this.sessionRepo.findById(input.sessionId);
+      if (!session) {
+        throw new Error(`Session not found: ${input.sessionId}`);
+      }
+
       await this.messageRepo.updateStatus(input.messageId, 'processing');
 
       // Ensure sandbox exists
       sandbox = await this.sandboxManager.create(input.sessionId, {
-        repoOwner: input.repoOwner ?? '',
-        repoName: input.repoName ?? '',
-        branch: input.branchName,
+        repoOwner: session.repoOwner ?? '',
+        repoName: session.repoName ?? '',
+        branch: session.branchName ?? undefined,
         secrets: {},
-        model: 'anthropic/claude-sonnet-4-6',
-        reasoningEffort: 'medium',
+        model: session.model ?? 'anthropic/claude-sonnet-4-6',
+        reasoningEffort: session.reasoningEffort ?? 'medium',
         apiKey: input.apiKey ?? '',
       });
 
@@ -128,9 +134,9 @@ export class ExecuteTaskUseCase
         messageId: input.messageId,
         sandboxId: sandbox.sandboxId,
         prompt: input.prompt,
-        repoOwner: input.repoOwner,
-        repoName: input.repoName,
-        branchName: input.branchName,
+        repoOwner: session.repoOwner ?? undefined,
+        repoName: session.repoName ?? undefined,
+        branchName: session.branchName ?? undefined,
         lintErrors: [],
         testFailures: [],
         filesTouched: [],
