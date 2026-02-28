@@ -55,7 +55,10 @@ const create = protectedProcedure
 	.input(
 		z.object({
 			name: z.string().min(1, "Name is required"),
-			url: z.string().url("Must be a valid URL"),
+			repoOwner: z.string().min(1, "Repo owner is required"),
+			repoName: z.string().min(1, "Repo name is required"),
+			repoId: z.string().optional(),
+			defaultBranch: z.string().optional(),
 			organizationId: z.string().uuid().optional(),
 		}),
 	)
@@ -66,7 +69,10 @@ const create = protectedProcedure
 
 		const result = await createProjectUseCase.execute({
 			name: input.name,
-			url: input.url,
+			repoOwner: input.repoOwner,
+			repoName: input.repoName,
+			repoId: input.repoId,
+			defaultBranch: input.defaultBranch,
 			userId: context.user.id,
 			organizationId: input.organizationId,
 		});
@@ -79,7 +85,10 @@ const update = protectedProcedure
 		z.object({
 			projectId: z.string().uuid(),
 			name: z.string().min(1).optional(),
-			url: z.string().url().optional(),
+			repoOwner: z.string().min(1).optional(),
+			repoName: z.string().min(1).optional(),
+			repoId: z.string().optional(),
+			defaultBranch: z.string().optional(),
 		}),
 	)
 	.handler(async ({ input, context }): Promise<ResponseType<Project>> => {

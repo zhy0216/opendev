@@ -8,6 +8,7 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 import { organization } from "./organization.schema";
+import { project } from "./project.schema";
 import { user } from "./user.schema";
 
 export const repoSecret = pgTable(
@@ -21,6 +22,9 @@ export const repoSecret = pgTable(
 		createdBy: text("createdBy")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
+		projectId: uuid("projectId").references(() => project.id, {
+			onDelete: "cascade",
+		}),
 		createdAt: timestamp("createdAt", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -45,6 +49,10 @@ export const repoSecretRelations = relations(repoSecret, ({ one }) => ({
 	creator: one(user, {
 		fields: [repoSecret.createdBy],
 		references: [user.id],
+	}),
+	project: one(project, {
+		fields: [repoSecret.projectId],
+		references: [project.id],
 	}),
 }));
 

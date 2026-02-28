@@ -14,20 +14,22 @@ function ProjectsPage() {
   const queryClient = useQueryClient();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
-  const [newProjectUrl, setNewProjectUrl] = useState('');
+  const [newRepoOwner, setNewRepoOwner] = useState('');
+  const [newRepoName, setNewRepoName] = useState('');
 
   const { data: projectsResponse, isLoading, isError, error, refetch } = useQuery(
     orpc.project.list.queryOptions()
   );
 
   const createMutation = useMutation({
-    mutationFn: (data: { name: string; url: string }) =>
+    mutationFn: (data: { name: string; repoOwner: string; repoName: string }) =>
       orpc.project.create.call(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project', 'list'] });
       setShowCreateModal(false);
       setNewProjectName('');
-      setNewProjectUrl('');
+      setNewRepoOwner('');
+      setNewRepoName('');
     },
   });
 
@@ -41,7 +43,7 @@ function ProjectsPage() {
 
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    createMutation.mutate({ name: newProjectName, url: newProjectUrl });
+    createMutation.mutate({ name: newProjectName, repoOwner: newRepoOwner, repoName: newRepoName });
   };
 
   const projects = projectsResponse?.success ? projectsResponse.data : [];
@@ -109,8 +111,8 @@ function ProjectsPage() {
                             <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                             </svg>
-                            <a href={project.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                              {project.url}
+                            <a href={`https://github.com/${project.repoOwner}/${project.repoName}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                              {project.repoOwner}/{project.repoName}
                             </a>
                           </div>
                         </div>
@@ -161,17 +163,32 @@ function ProjectsPage() {
             />
           </div>
           <div>
-            <label htmlFor="project-url" className="block text-sm font-medium text-gray-700">
-              Project URL
+            <label htmlFor="repo-owner" className="block text-sm font-medium text-gray-700">
+              Repo owner
             </label>
             <input
-              type="url"
-              name="project-url"
-              id="project-url"
-              value={newProjectUrl}
-              onChange={(e) => setNewProjectUrl(e.target.value)}
+              type="text"
+              name="repo-owner"
+              id="repo-owner"
+              value={newRepoOwner}
+              onChange={(e) => setNewRepoOwner(e.target.value)}
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3 py-2 border"
-              placeholder="https://example.com"
+              placeholder="octocat"
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="repo-name" className="block text-sm font-medium text-gray-700">
+              Repo name
+            </label>
+            <input
+              type="text"
+              name="repo-name"
+              id="repo-name"
+              value={newRepoName}
+              onChange={(e) => setNewRepoName(e.target.value)}
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3 py-2 border"
+              placeholder="hello-world"
               required
             />
           </div>

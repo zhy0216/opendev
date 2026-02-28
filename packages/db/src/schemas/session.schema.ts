@@ -8,6 +8,7 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 import { organization } from "./organization.schema";
+import { project } from "./project.schema";
 import { user } from "./user.schema";
 
 export const agentSession = pgTable(
@@ -31,6 +32,9 @@ export const agentSession = pgTable(
 		organizationId: uuid("organizationId").references(() => organization.id, {
 			onDelete: "set null",
 		}),
+		projectId: uuid("projectId").references(() => project.id, {
+			onDelete: "set null",
+		}),
 		createdAt: timestamp("createdAt", { withTimezone: true })
 			.notNull()
 			.defaultNow(),
@@ -42,6 +46,7 @@ export const agentSession = pgTable(
 		index("agent_session_status_idx").on(table.status),
 		index("agent_session_created_by_idx").on(table.createdBy),
 		index("agent_session_organization_id_idx").on(table.organizationId),
+		index("agent_session_project_id_idx").on(table.projectId),
 	],
 );
 
@@ -55,6 +60,10 @@ export const agentSessionRelations = relations(
 		organization: one(organization, {
 			fields: [agentSession.organizationId],
 			references: [organization.id],
+		}),
+		project: one(project, {
+			fields: [agentSession.projectId],
+			references: [project.id],
 		}),
 		participants: many(sessionParticipant),
 		messages: many(sessionMessage),
