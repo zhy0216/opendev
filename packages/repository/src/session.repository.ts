@@ -11,7 +11,7 @@ export type SessionUpdate = Partial<Omit<SessionCreate, 'createdBy'>>;
 export abstract class ISessionRepository {
   abstract create(data: SessionCreate): Promise<Session>;
   abstract findById(id: string): Promise<Session | undefined>;
-  abstract findByUserId(userId: string, filters?: { status?: string; limit?: number; offset?: number }): Promise<Session[]>;
+  abstract findByUserId(userId: string, filters?: { status?: string; projectId?: string; limit?: number; offset?: number }): Promise<Session[]>;
   abstract update(id: string, data: SessionUpdate): Promise<Session | undefined>;
   abstract delete(id: string): Promise<boolean>;
   abstract updateStatus(id: string, status: string): Promise<void>;
@@ -46,16 +46,21 @@ export class SessionRepository {
 
   async findByUserId(
     userId: string,
-    filters?: { status?: string; limit?: number; offset?: number }
+    filters?: { status?: string; projectId?: string; limit?: number; offset?: number }
   ): Promise<Session[]> {
+    const conditions = [eq(agentSession.createdBy, userId)];
+
+    if (filters?.status) {
+      conditions.push(eq(agentSession.status, filters.status));
+    }
+    if (filters?.projectId) {
+      conditions.push(eq(agentSession.projectId, filters.projectId));
+    }
+
     let query = this.dbClient
       .select()
       .from(agentSession)
-      .where(
-        filters?.status
-          ? and(eq(agentSession.createdBy, userId), eq(agentSession.status, filters.status))
-          : eq(agentSession.createdBy, userId)
-      )
+      .where(and(...conditions))
       .orderBy(desc(agentSession.createdAt));
 
     if (filters?.limit) {

@@ -24,9 +24,6 @@ export abstract class IExecuteTaskUseCase {
     sessionId: string;
     messageId: string;
     prompt: string;
-    repoOwner?: string;
-    repoName?: string;
-    branchName?: string;
     apiKey?: string;
   }): Promise<void>;
 }
