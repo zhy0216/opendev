@@ -177,7 +177,8 @@ export function useSessionSocket(sessionId: string, token: string | null) {
       }
     };
 
-    ws.onerror = () => {
+    ws.onerror = (event) => {
+      console.error('[ws] connection error', event);
       // onclose will be called after onerror, so reconnect is handled there
     };
   }, [sessionId, token, send, handleMessage, clearPingInterval, clearReconnectTimeout]);

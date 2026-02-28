@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orpc } from '../../orpc';
 import { ProjectListSkeleton } from '../../components/ui/Skeleton';
 import { QueryError } from '../../components/ui/ErrorBoundary';
+import { Modal } from '../../components/ui/Modal';
 
 export const Route = createFileRoute('/dashboard/projects')({
   component: ProjectsPage,
@@ -134,74 +135,48 @@ function ProjectsPage() {
         )}
       </div>
 
-      {showCreateModal && (
-        <div className="fixed z-10 inset-0 overflow-y-auto">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShowCreateModal(false)} />
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-              <form onSubmit={handleCreateProject}>
-                <div>
-                  <h3 className="text-lg leading-6 font-medium text-gray-900">Create new project</h3>
-                  {createMutation.error && (
-                    <div className="mt-2 p-2 bg-red-50 text-red-600 text-sm rounded">
-                      Failed to create project. Please try again.
-                    </div>
-                  )}
-                  <div className="mt-4 space-y-4">
-                    <div>
-                      <label htmlFor="project-name" className="block text-sm font-medium text-gray-700">
-                        Project name
-                      </label>
-                      <input
-                        type="text"
-                        name="project-name"
-                        id="project-name"
-                        value={newProjectName}
-                        onChange={(e) => setNewProjectName(e.target.value)}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3 py-2 border"
-                        placeholder="My Awesome Project"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="project-url" className="block text-sm font-medium text-gray-700">
-                        Project URL
-                      </label>
-                      <input
-                        type="url"
-                        name="project-url"
-                        id="project-url"
-                        value={newProjectUrl}
-                        onChange={(e) => setNewProjectUrl(e.target.value)}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3 py-2 border"
-                        placeholder="https://example.com"
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-                  <button
-                    type="submit"
-                    disabled={createMutation.isPending}
-                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:col-start-2 sm:text-sm disabled:opacity-50"
-                  >
-                    {createMutation.isPending ? 'Creating...' : 'Create'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateModal(false)}
-                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:col-start-1 sm:text-sm"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
+      <Modal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        title="Create new project"
+        error={createMutation.error ? 'Failed to create project. Please try again.' : null}
+        onSubmit={handleCreateProject}
+        submitLabel="Create"
+        submitPending={createMutation.isPending}
+      >
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="project-name" className="block text-sm font-medium text-gray-700">
+              Project name
+            </label>
+            <input
+              type="text"
+              name="project-name"
+              id="project-name"
+              value={newProjectName}
+              onChange={(e) => setNewProjectName(e.target.value)}
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3 py-2 border"
+              placeholder="My Awesome Project"
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="project-url" className="block text-sm font-medium text-gray-700">
+              Project URL
+            </label>
+            <input
+              type="url"
+              name="project-url"
+              id="project-url"
+              value={newProjectUrl}
+              onChange={(e) => setNewProjectUrl(e.target.value)}
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm px-3 py-2 border"
+              placeholder="https://example.com"
+              required
+            />
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

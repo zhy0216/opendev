@@ -8,11 +8,18 @@ export type ClientMessage =
   | { type: 'typing'; isTyping: boolean }
   | { type: 'fetch_history'; cursor?: string; limit?: number };
 
+// Sandbox event data types
+export interface SandboxEventData {
+  type: string;
+  timestamp?: number;
+  data?: Record<string, unknown>;
+}
+
 // Server -> Client messages
 export type ServerMessage =
   | { type: 'pong'; timestamp: number }
   | { type: 'subscribed'; sessionId: string; participantId: string }
-  | { type: 'sandbox_event'; event: unknown }
+  | { type: 'sandbox_event'; event: SandboxEventData | null }
   | { type: 'history_page'; items: unknown[]; hasMore: boolean; cursor?: string }
   | { type: 'presence_sync'; participants: PresenceInfo[] }
   | { type: 'presence_update'; participant: PresenceInfo }

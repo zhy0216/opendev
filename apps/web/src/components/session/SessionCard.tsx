@@ -1,36 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { cn } from '../../lib/utils';
-
-const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  pending: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Pending' },
-  active: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Active' },
-  running: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Running' },
-  completed: { bg: 'bg-green-100', text: 'text-green-800', label: 'Completed' },
-  error: { bg: 'bg-red-100', text: 'text-red-800', label: 'Error' },
-  failed: { bg: 'bg-red-100', text: 'text-red-800', label: 'Failed' },
-  archived: { bg: 'bg-gray-100', text: 'text-gray-500', label: 'Archived' },
-  cancelled: { bg: 'bg-gray-100', text: 'text-gray-500', label: 'Cancelled' },
-};
-
-function getStatusStyle(status: string) {
-  return STATUS_STYLES[status] ?? { bg: 'bg-gray-100', text: 'text-gray-600', label: status };
-}
-
-function relativeTime(date: Date | string): string {
-  const now = Date.now();
-  const then = new Date(date).getTime();
-  const diffMs = now - then;
-  const diffSec = Math.floor(diffMs / 1000);
-  const diffMin = Math.floor(diffSec / 60);
-  const diffHr = Math.floor(diffMin / 60);
-  const diffDay = Math.floor(diffHr / 24);
-
-  if (diffSec < 60) return 'just now';
-  if (diffMin < 60) return `${diffMin}m ago`;
-  if (diffHr < 24) return `${diffHr}h ago`;
-  if (diffDay < 7) return `${diffDay}d ago`;
-  return new Date(date).toLocaleDateString();
-}
+import { getStatusStyle } from '../../lib/status-styles';
+import { relativeTime } from '../../lib/format';
 
 interface SessionCardProps {
   session: {

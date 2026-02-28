@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 import { orpc } from '../../orpc';
 import { useSessionSocket } from '../../hooks/use-session-socket';
 import { cn } from '../../lib/utils';
+import { getStatusStyle } from '../../lib/status-styles';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { EventTimeline } from '../../components/session/EventTimeline';
 import { FollowUpPrompt } from '../../components/session/FollowUpPrompt';
@@ -16,19 +17,6 @@ import type { SandboxStatus } from '@repo/types';
 export const Route = createFileRoute('/dashboard/session/$sessionId')({
   component: SessionViewPage,
 });
-
-const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pending' },
-  running: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Running' },
-  completed: { bg: 'bg-green-100', text: 'text-green-800', label: 'Completed' },
-  failed: { bg: 'bg-red-100', text: 'text-red-800', label: 'Failed' },
-  archived: { bg: 'bg-gray-100', text: 'text-gray-600', label: 'Archived' },
-  cancelled: { bg: 'bg-gray-100', text: 'text-gray-600', label: 'Cancelled' },
-};
-
-function getStatusStyle(status: string) {
-  return STATUS_STYLES[status] ?? { bg: 'bg-gray-100', text: 'text-gray-600', label: status };
-}
 
 const SANDBOX_STATUSES = new Set<string>([
   'pending',
@@ -75,21 +63,21 @@ function SessionViewPage() {
     sendTyping,
   } = useSessionSocket(sessionId, wsToken);
 
+  interface SessionViewData {
+    id: string;
+    name: string;
+    status: string;
+    repoOwner?: string | null;
+    repoName?: string | null;
+    branch?: string | null;
+    model?: string | null;
+    sandboxStatus?: string | null;
+    createdAt: string | Date;
+    updatedAt?: string | Date | null;
+  }
+
   const rawSession = sessionResponse?.success ? sessionResponse.data : null;
-  const session = rawSession
-    ? {
-        id: rawSession.id,
-        name: rawSession.name,
-        status: rawSession.status,
-        repoOwner: (rawSession as Record<string, unknown>).repoOwner as string | null | undefined,
-        repoName: (rawSession as Record<string, unknown>).repoName as string | null | undefined,
-        branch: (rawSession as Record<string, unknown>).branch as string | null | undefined,
-        model: (rawSession as Record<string, unknown>).model as string | null | undefined,
-        sandboxStatus: (rawSession as Record<string, unknown>).sandboxStatus as string | null | undefined,
-        createdAt: rawSession.createdAt,
-        updatedAt: rawSession.updatedAt,
-      }
-    : null;
+  const session = (rawSession as SessionViewData | null) ?? null;
 
   const handleFollowUp = useCallback(
     (content: string) => {

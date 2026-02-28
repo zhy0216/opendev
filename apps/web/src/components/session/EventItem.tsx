@@ -12,11 +12,7 @@ interface EventItemProps {
 
 function extractEventData(event: ServerMessage) {
   if (event.type === 'sandbox_event') {
-    const sandboxEvent = event.event as {
-      type?: string;
-      timestamp?: number;
-      data?: unknown;
-    } | null;
+    const sandboxEvent = event.event;
     return {
       eventType: sandboxEvent?.type ?? 'unknown',
       timestamp: sandboxEvent?.timestamp ?? Date.now(),
@@ -32,8 +28,7 @@ export function EventItem({ event }: EventItemProps) {
     const extracted = extractEventData(event);
     if (!extracted) return null;
 
-    const { eventType, timestamp, data } = extracted;
-    const eventData = data as Record<string, unknown>;
+    const { eventType, timestamp, data: eventData } = extracted;
 
     switch (eventType) {
       case 'user_message':

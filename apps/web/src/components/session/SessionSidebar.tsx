@@ -1,4 +1,5 @@
 import { cn } from '../../lib/utils';
+import { getStatusStyle } from '../../lib/status-styles';
 import type { PresenceInfo } from '@repo/types';
 
 interface SessionSidebarProps {
@@ -17,19 +18,6 @@ interface SessionSidebarProps {
   connected: boolean;
   onStop: () => void;
   isProcessing: boolean;
-}
-
-const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pending' },
-  running: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Running' },
-  completed: { bg: 'bg-green-100', text: 'text-green-800', label: 'Completed' },
-  failed: { bg: 'bg-red-100', text: 'text-red-800', label: 'Failed' },
-  archived: { bg: 'bg-gray-100', text: 'text-gray-600', label: 'Archived' },
-  cancelled: { bg: 'bg-gray-100', text: 'text-gray-600', label: 'Cancelled' },
-};
-
-function getStatusStyle(status: string) {
-  return STATUS_STYLES[status] ?? { bg: 'bg-gray-100', text: 'text-gray-600', label: status };
 }
 
 export function SessionSidebar({
