@@ -1,13 +1,7 @@
-import type { DbClient } from '@repo/db';
+// Database — used as DI tokens only, actual values are DB and Transaction
+export abstract class IDatabase {}
 
-// Database
-export abstract class IDatabase {
-  abstract readonly client: DbClient;
-}
-
-export abstract class ITransaction {
-  abstract readonly client: DbClient;
-}
+export abstract class ITransaction {}
 
 // Services
 export abstract class IEncryptionService {

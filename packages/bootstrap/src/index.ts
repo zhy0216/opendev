@@ -128,7 +128,7 @@ export function initializeContainer() {
 
 	// Bind database
 	const db = createDb(env.DATABASE_URL);
-	container.bind(IDatabase).toConstantValue(db as any);
+	container.bind(IDatabase).toConstantValue(db);
 
 	// Bind auth
 	container.bind(IAuth).toConstantValue(createAuth(db));

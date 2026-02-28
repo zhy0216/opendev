@@ -1,3 +1,4 @@
+/// <reference path="./modal.d.ts" />
 import 'reflect-metadata';
 import { injectable } from 'inversify';
 import { IModalClient } from '@repo/di';
@@ -17,7 +18,7 @@ export class ModalClient extends IModalClient {
     // Dynamic import to avoid loading modal SDK when not configured
     const modal = await import('modal');
 
-    const sandbox = await (modal as any).Sandbox.create({
+    const sandbox = await modal.Sandbox.create({
       image: config.image,
       encrypted_ports: config.encryptedPorts,
       idle_timeout: config.idleTimeout ?? 1800,
@@ -43,7 +44,7 @@ export class ModalClient extends IModalClient {
     log.info('Terminating Modal sandbox', { sandboxId });
 
     const modal = await import('modal');
-    const sandbox = await (modal as any).Sandbox.from_id(sandboxId);
+    const sandbox = await modal.Sandbox.from_id(sandboxId);
     await sandbox.terminate();
 
     log.info('Modal sandbox terminated', { sandboxId });

@@ -54,12 +54,9 @@ export const loggingMiddleware = pub.middleware(async ({ context, next }) => {
  */
 export const authLoggingMiddleware = pub.middleware(async ({ context, next }) => {
   // Extract user info from context if available (set by authMiddleware)
-  const user = (context as any).user;
-
-  if (user) {
-    // Update the logging context with user information
-    const currentContext = getLogger();
-    const log = currentContext.withContext({
+  if ('user' in context && context.user && typeof context.user === 'object') {
+    const user = context.user as { id: string; email: string; name: string };
+    const log = getLogger().withContext({
       userId: user.id,
       userEmail: user.email,
     });
