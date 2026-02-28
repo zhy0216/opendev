@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '../../lib/auth';
 import { orpc } from '../../orpc';
 import { DEFAULT_MODEL, type ModelDefinition } from '@repo/types';
-import { RepoSelector } from '../../components/session/RepoSelector';
+import { ProjectSelector } from '../../components/session/ProjectSelector';
 import { ModelSelector } from '../../components/session/ModelSelector';
 import { ReasoningEffortPills } from '../../components/session/ReasoningEffortPills';
 import { PromptInput } from '../../components/session/PromptInput';
@@ -19,8 +19,7 @@ function DashboardIndex() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const [repoOwner, setRepoOwner] = useState('');
-  const [repoName, setRepoName] = useState('');
+  const [projectId, setProjectId] = useState<string | null>(null);
   const [modelId, setModelId] = useState(DEFAULT_MODEL.id);
   const [selectedModel, setSelectedModel] = useState<ModelDefinition>(DEFAULT_MODEL);
   const [reasoningEffort, setReasoningEffort] = useState<string>(DEFAULT_MODEL.defaultReasoningEffort);
@@ -40,8 +39,7 @@ function DashboardIndex() {
   const createMutation = useMutation({
     mutationFn: (data: {
       name: string;
-      repoOwner?: string;
-      repoName?: string;
+      projectId: string;
       model?: string;
       reasoningEffort?: string;
     }) => orpc.session.create.call(data),
@@ -63,7 +61,7 @@ function DashboardIndex() {
   });
 
   const handleSubmit = useCallback(() => {
-    if (!prompt.trim()) return;
+    if (!prompt.trim() || !projectId) return;
 
     setError(null);
 
@@ -74,12 +72,11 @@ function DashboardIndex() {
 
     createMutation.mutate({
       name,
-      repoOwner: repoOwner.trim() || undefined,
-      repoName: repoName.trim() || undefined,
+      projectId,
       model: modelId,
       reasoningEffort,
     });
-  }, [prompt, repoOwner, repoName, modelId, reasoningEffort, createMutation]);
+  }, [prompt, projectId, modelId, reasoningEffort, createMutation]);
 
   return (
     <div className="px-4 py-6 sm:px-0">
@@ -106,12 +103,10 @@ function DashboardIndex() {
         )}
 
         <div className="space-y-5">
-          {/* Repository */}
-          <RepoSelector
-            repoOwner={repoOwner}
-            repoName={repoName}
-            onRepoOwnerChange={setRepoOwner}
-            onRepoNameChange={setRepoName}
+          {/* Project */}
+          <ProjectSelector
+            value={projectId}
+            onChange={setProjectId}
           />
 
           {/* Model + Reasoning Effort row */}
@@ -137,7 +132,7 @@ function DashboardIndex() {
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={createMutation.isPending || !prompt.trim()}
+              disabled={createMutation.isPending || !prompt.trim() || !projectId}
               className="inline-flex items-center justify-center bg-blue-600 text-white rounded-lg px-5 py-2.5 text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {createMutation.isPending ? (
