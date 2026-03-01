@@ -17,8 +17,8 @@ import { Route as DashboardSessionsRouteImport } from './routes/dashboard/sessio
 import { Route as DashboardProjectsRouteImport } from './routes/dashboard/projects'
 import { Route as DashboardOrganizationsRouteImport } from './routes/dashboard/organizations'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
-import { Route as DashboardOrganizationsOrgIdRouteImport } from './routes/dashboard/organizations/$orgId'
 import { Route as DashboardSessionSessionIdRouteImport } from './routes/dashboard/session.$sessionId'
+import { Route as DashboardOrganizationsOrgIdRouteImport } from './routes/dashboard/organizations/$orgId'
 
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
@@ -60,17 +60,17 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/auth/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardOrganizationsOrgIdRoute =
-  DashboardOrganizationsOrgIdRouteImport.update({
-    id: '/$orgId',
-    path: '/$orgId',
-    getParentRoute: () => DashboardOrganizationsRoute,
-  } as any)
 const DashboardSessionSessionIdRoute =
   DashboardSessionSessionIdRouteImport.update({
     id: '/session/$sessionId',
     path: '/session/$sessionId',
     getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardOrganizationsOrgIdRoute =
+  DashboardOrganizationsOrgIdRouteImport.update({
+    id: '/$orgId',
+    path: '/$orgId',
+    getParentRoute: () => DashboardOrganizationsRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -211,19 +211,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/organizations/$orgId': {
-      id: '/dashboard/organizations/$orgId'
-      path: '/$orgId'
-      fullPath: '/dashboard/organizations/$orgId'
-      preLoaderRoute: typeof DashboardOrganizationsOrgIdRouteImport
-      parentRoute: typeof DashboardOrganizationsRoute
-    }
     '/dashboard/session/$sessionId': {
       id: '/dashboard/session/$sessionId'
       path: '/session/$sessionId'
       fullPath: '/dashboard/session/$sessionId'
       preLoaderRoute: typeof DashboardSessionSessionIdRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/organizations/$orgId': {
+      id: '/dashboard/organizations/$orgId'
+      path: '/$orgId'
+      fullPath: '/dashboard/organizations/$orgId'
+      preLoaderRoute: typeof DashboardOrganizationsOrgIdRouteImport
+      parentRoute: typeof DashboardOrganizationsRoute
     }
   }
 }
