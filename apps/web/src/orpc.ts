@@ -5,7 +5,7 @@ import type { RouterClient } from '@orpc/server';
 import type { AppRouter } from '@repo/routes';
 
 const link = new RPCLink({
-  url: '/rpc',
+  url: new URL('/rpc', window.location.origin).href,
   fetch: (input, init) => fetch(input, { ...init, credentials: 'include' }),
 });
 
