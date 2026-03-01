@@ -2,7 +2,15 @@ import 'reflect-metadata';
 import { RPCHandler } from '@orpc/server/fetch';
 import { initializeContainer } from '@repo/bootstrap';
 import { env } from '@repo/env';
-import { getLogger, generateRequestId, runWithLogContextAsync, createServiceLogger } from '@repo/logger';
+import {
+  getLogger,
+  generateRequestId,
+  runWithLogContextAsync,
+  createServiceLogger,
+  configureLogger,
+  ConsoleTransport,
+  LogFileRotationTransport,
+} from '@repo/logger';
 import { getInject } from '@repo/di';
 import { IAuth, type Auth } from '@repo/auth';
 import { ISlackService, IGitHubBotService, ILinearService } from '@repo/service';
@@ -15,6 +23,21 @@ import { handleWsMessage, handleWsOpen, handleWsClose } from './ws/handlers';
 
 // Initialize DI container first (this also configures the logger)
 initializeContainer();
+
+configureLogger({
+  level: 'debug',
+  transports: [
+    new ConsoleTransport({
+      logger: console,
+      level: 'debug',
+    }),
+    new LogFileRotationTransport({
+      level: 'debug',
+      filename: './dist/app.log',
+      auditFile: './dist/audit.json',
+    }),
+  ],
+});
 
 const webhookLog = createServiceLogger('WebhookHandler');
 

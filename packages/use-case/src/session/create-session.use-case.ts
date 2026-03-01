@@ -105,46 +105,51 @@ export class CreateSessionUseCase
     model: string,
     reasoningEffort: string
   ): void {
-    (async () => {
-      try {
-        const secretRepo = getInject<SecretRepository>(ISecretRepository);
-        const encryption = getInject<EncryptionService>(IEncryptionService);
+    // Defer execution so the wrapping database transaction can commit first.
+    // The sandbox record has a foreign key to agentSession, so the session
+    // must be visible (committed) before the sandbox insert runs.
+    setTimeout(() => {
+      (async () => {
+        try {
+          const secretRepo = getInject<SecretRepository>(ISecretRepository);
+          const encryption = getInject<EncryptionService>(IEncryptionService);
 
-        const secret = await secretRepo.getGlobalSecretByKey(organizationId, 'ANTHROPIC_API_KEY');
-        if (!secret) {
-          log.warn('ANTHROPIC_API_KEY not found for organization', { organizationId, sessionId });
-          return;
-        }
-
-        const apiKey = encryption.decrypt(secret.encryptedValue);
-
-        await this.sandboxManager.create(
-          sessionId,
-          {
-            repoOwner,
-            repoName,
-            branch,
-            secrets: {},
-            model,
-            reasoningEffort,
-            apiKey,
-          },
-          (status) => {
-            this.sandboxBridge.emitEvent({
-              type: 'sandbox_status_change',
-              sandboxId: '',
-              sessionId,
-              timestamp: Date.now(),
-              data: { status },
-            });
+          const secret = await secretRepo.getGlobalSecretByKey(organizationId, 'ANTHROPIC_API_KEY');
+          if (!secret) {
+            log.warn('ANTHROPIC_API_KEY not found for organization', { organizationId, sessionId });
+            return;
           }
-        );
-      } catch (error) {
-        log.error(
-          'Background sandbox spawn failed',
-          error instanceof Error ? error : new Error(String(error))
-        );
-      }
-    })();
+
+          const apiKey = encryption.decrypt(secret.encryptedValue);
+
+          await this.sandboxManager.create(
+            sessionId,
+            {
+              repoOwner,
+              repoName,
+              branch,
+              secrets: {},
+              model,
+              reasoningEffort,
+              apiKey,
+            },
+            (status) => {
+              this.sandboxBridge.emitEvent({
+                type: 'sandbox_status_change',
+                sandboxId: '',
+                sessionId,
+                timestamp: Date.now(),
+                data: { status },
+              });
+            }
+          );
+        } catch (error) {
+          log.error(
+            'Background sandbox spawn failed',
+            error instanceof Error ? error : new Error(String(error))
+          );
+        }
+      })();
+    }, 0);
   }
 }

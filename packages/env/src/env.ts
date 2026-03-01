@@ -46,6 +46,7 @@ export const env = createEnv({
 		MODAL_TOKEN_ID: z.string().min(1, "MODAL_TOKEN_ID is required"),
 		MODAL_TOKEN_SECRET: z.string().min(1, "MODAL_TOKEN_SECRET is required"),
 		MODAL_SANDBOX_IMAGE: z.string().min(1, "MODAL_SANDBOX_IMAGE is required"),
+		MODAL_APP_NAME: z.string().min(1, "MODAL_APP_NAME is required").default("opendev"),
 		// Logging configuration
 		LOG_LEVEL: z
 			.enum(["trace", "debug", "info", "warn", "error", "fatal"])

@@ -6,11 +6,12 @@ import {
   type LogLayerTransport,
   type LogLevelType,
 } from 'loglayer';
+import { LogFileRotationTransport } from '@loglayer/transport-log-file-rotation';
 import { serializeError } from 'serialize-error';
 import { env } from '@repo/env';
 
-// Re-export types for consumers
-export { LogLevel };
+// Re-export types and transports for consumers
+export { LogLevel, ConsoleTransport, LogFileRotationTransport };
 export type { LogLevelType, LogLayerTransport };
 
 /**

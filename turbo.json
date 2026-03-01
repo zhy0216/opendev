@@ -13,7 +13,8 @@
     "EMAIL_FROM",
     "MODAL_TOKEN_ID",
     "MODAL_TOKEN_SECRET",
-    "MODAL_SANDBOX_IMAGE"
+    "MODAL_SANDBOX_IMAGE",
+    "MODAL_APP_NAME"
   ],
   "tasks": {
     "build": {

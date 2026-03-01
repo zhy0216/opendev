@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@loglayer/transport-log-file-rotation": "^3.0.2",
     "@repo/env": "workspace:*",
     "loglayer": "^6.3.3",
     "serialize-error": "^12.0.0"
