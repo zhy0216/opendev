@@ -80,47 +80,44 @@ export class CreateSessionUseCase
     });
 
     // Fire-and-forget: spawn sandbox in the background
-    const orgId = input.organizationId ?? project.organizationId;
-    if (orgId) {
-      this.spawnSandboxInBackground(
-        session.id,
-        orgId,
-        project.repoOwner,
-        project.repoName,
-        input.branchName ?? project.defaultBranch ?? '',
-        input.model,
-        input.reasoningEffort ?? 'medium'
-      );
-    }
+    this.spawnSandboxInBackground(
+      session.id,
+      project.repoOwner,
+      project.repoName,
+      input.branchName ?? project.defaultBranch ?? '',
+      input.model,
+      input.reasoningEffort ?? 'medium',
+      input.organizationId ?? project.organizationId
+    );
 
     return { session, participant };
   }
 
   private spawnSandboxInBackground(
     sessionId: string,
-    organizationId: string,
     repoOwner: string,
     repoName: string,
     branch: string,
     model: string,
-    reasoningEffort: string
+    reasoningEffort: string,
+    organizationId?: string | null
   ): void {
     // Defer execution so the wrapping database transaction can commit first.
     // The sandbox record has a foreign key to agentSession, so the session
     // must be visible (committed) before the sandbox insert runs.
     setTimeout(() => {
       (async () => {
+        log.warn("start creating sandbox")
         try {
           const secretRepo = getInject<SecretRepository>(ISecretRepository);
           const encryption = getInject<EncryptionService>(IEncryptionService);
 
-          const secret = await secretRepo.getGlobalSecretByKey(organizationId, 'ANTHROPIC_API_KEY');
-          if (!secret) {
-            log.warn('ANTHROPIC_API_KEY not found for organization', { organizationId, sessionId });
-            return;
-          }
-
-          const apiKey = encryption.decrypt(secret.encryptedValue);
+          const apiKey = await this.resolveApiKey(secretRepo, encryption, repoOwner, repoName, organizationId) ?? "";
+          // TODO: 
+          // if (!apiKey) {
+          //   log.warn('ANTHROPIC_API_KEY not found', { sessionId, repoOwner, repoName, organizationId });
+          //   return;
+          // }
 
           await this.sandboxManager.create(
             sessionId,
@@ -151,5 +148,30 @@ export class CreateSessionUseCase
         }
       })();
     }, 0);
+  }
+
+  private async resolveApiKey(
+    secretRepo: SecretRepository,
+    encryption: EncryptionService,
+    repoOwner: string,
+    repoName: string,
+    organizationId?: string | null
+  ): Promise<string | undefined> {
+    // 1. Try repo-level secrets first
+    const repoSecrets = await secretRepo.getRepoSecrets(repoOwner, repoName);
+    const repoApiKeySecret = repoSecrets.find((s) => s.key === 'ANTHROPIC_API_KEY');
+    if (repoApiKeySecret) {
+      return encryption.decrypt(repoApiKeySecret.encryptedValue);
+    }
+
+    // 2. Fall back to organization-level global secret
+    if (organizationId) {
+      const globalSecret = await secretRepo.getGlobalSecretByKey(organizationId, 'ANTHROPIC_API_KEY');
+      if (globalSecret) {
+        return encryption.decrypt(globalSecret.encryptedValue);
+      }
+    }
+
+    return undefined;
   }
 }

@@ -43,6 +43,21 @@ function SessionViewPage() {
     orpc.session.get.queryOptions({ input: { id: sessionId } })
   );
 
+  // Fetch initial sandbox status from DB (poll while in transitional states)
+  const { data: sandboxStatusResponse } = useQuery({
+    ...orpc.session.getSandboxStatus.queryOptions({ input: { sessionId } }),
+    refetchInterval: (query) => {
+      const status = query.state.data?.success
+        ? (query.state.data.data as { status: string }).status
+        : null;
+      if (!status || status === 'pending' || status === 'starting') return 3000;
+      return false;
+    },
+  });
+  const dbSandboxStatus = sandboxStatusResponse?.success
+    ? (sandboxStatusResponse.data as { status: string }).status
+    : null;
+
   // Fetch WS token
   const { data: tokenResponse } = useQuery(
     orpc.session.getWsToken.queryOptions({ input: { sessionId } })
@@ -72,7 +87,6 @@ function SessionViewPage() {
     repoName?: string | null;
     branch?: string | null;
     model?: string | null;
-    sandboxStatus?: string | null;
     createdAt: string | Date;
     updatedAt?: string | Date | null;
   }
@@ -142,7 +156,7 @@ function SessionViewPage() {
 
   const displayStatus = sessionStatus !== 'pending' ? sessionStatus : session.status;
   const statusStyle = getStatusStyle(displayStatus);
-  const sandboxStatus = wsSandboxStatus !== 'pending' ? wsSandboxStatus : (session.sandboxStatus ?? 'pending');
+  const sandboxStatus = wsSandboxStatus !== 'pending' ? wsSandboxStatus : (dbSandboxStatus ?? 'pending');
   const hasRepo = session.repoOwner && session.repoName;
 
   return (

@@ -101,21 +101,55 @@ export class SandboxManager extends ISandboxManager {
 
       modalSandboxId = modal.sandboxId;
 
-      const bearerToken = internalAuth.generateToken();
-      const initResponse = await fetch(`${modal.tunnelUrl}/init`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          apiKey: config.apiKey,
-          bearerToken,
-          model: config.model,
-        }),
-        signal: AbortSignal.timeout(TIMEOUTS.INIT),
-      });
+      await sandboxRepo.update(sandboxRecord.id, { externalSandboxId: modal.sandboxId });
 
-      if (!initResponse.ok) {
-        const err = await initResponse.text();
-        throw new Error(`Init failed: ${err}`);
+      const bearerToken = internalAuth.generateToken();
+
+      // Retry /init because the container's HTTP server may not be ready
+      // immediately after the tunnel URL becomes available.
+      const MAX_INIT_RETRIES = 5;
+      const INIT_RETRY_DELAY_MS = 2_000;
+      let lastInitError: Error | undefined;
+
+      for (let attempt = 1; attempt <= MAX_INIT_RETRIES; attempt++) {
+        try {
+          const initResponse = await fetch(`${modal.tunnelUrl}/init`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              apiKey: config.apiKey,
+              bearerToken,
+              model: config.model,
+            }),
+            signal: AbortSignal.timeout(TIMEOUTS.INIT),
+          });
+
+          if (!initResponse.ok) {
+            const err = await initResponse.text();
+            throw new Error(`Init failed: ${err}`);
+          }
+
+          lastInitError = undefined;
+          break;
+        } catch (err) {
+          lastInitError = err instanceof Error ? err : new Error(String(err));
+          const isRetryable = lastInitError.message.includes('ECONNRESET')
+            || lastInitError.message.includes('ECONNREFUSED')
+            || lastInitError.message.includes('socket')
+            || lastInitError.message.includes('fetch failed');
+
+          if (attempt < MAX_INIT_RETRIES && isRetryable) {
+            log.warn(`Init attempt ${attempt}/${MAX_INIT_RETRIES} failed, retrying in ${INIT_RETRY_DELAY_MS}ms`, {
+              sessionId,
+              error: lastInitError.message,
+            });
+            await new Promise((r) => setTimeout(r, INIT_RETRY_DELAY_MS));
+          }
+        }
+      }
+
+      if (lastInitError) {
+        throw lastInitError;
       }
 
       await sandboxRepo.updateStatus(sandboxRecord.id, 'running');
