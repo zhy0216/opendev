@@ -16,6 +16,7 @@ export abstract class ISecretRepository {
   abstract deleteRepoSecret(id: string): Promise<boolean>;
   abstract createGlobalSecret(data: GlobalSecretCreate): Promise<GlobalSecret>;
   abstract getGlobalSecrets(orgId?: string): Promise<GlobalSecret[]>;
+  abstract getGlobalSecretByKey(orgId: string, key: string): Promise<GlobalSecret | undefined>;
   abstract deleteGlobalSecret(id: string): Promise<boolean>;
 }
 
@@ -72,6 +73,20 @@ export class SecretRepository {
           ? eq(globalSecret.organizationId, orgId)
           : isNull(globalSecret.organizationId)
       );
+  }
+
+  async getGlobalSecretByKey(orgId: string, key: string): Promise<GlobalSecret | undefined> {
+    const result = await this.dbClient
+      .select()
+      .from(globalSecret)
+      .where(
+        and(
+          eq(globalSecret.organizationId, orgId),
+          eq(globalSecret.key, key)
+        )
+      )
+      .limit(1);
+    return result[0];
   }
 
   async deleteGlobalSecret(id: string): Promise<boolean> {

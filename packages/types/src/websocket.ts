@@ -20,6 +20,7 @@ export type ServerMessage =
   | { type: 'pong'; timestamp: number }
   | { type: 'subscribed'; sessionId: string; participantId: string }
   | { type: 'sandbox_event'; event: SandboxEventData | null }
+  | { type: 'sandbox_status'; status: string }
   | { type: 'history_page'; items: unknown[]; hasMore: boolean; cursor?: string }
   | { type: 'presence_sync'; participants: PresenceInfo[] }
   | { type: 'presence_update'; participant: PresenceInfo }

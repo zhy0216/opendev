@@ -23,7 +23,8 @@ export type SandboxEventType =
   | 'blueprint_node_completed'
   | 'blueprint_node_error'
   | 'blueprint_completed'
-  | 'blueprint_failed';
+  | 'blueprint_failed'
+  | 'sandbox_status_change';
 
 export interface SandboxEvent {
   type: SandboxEventType;

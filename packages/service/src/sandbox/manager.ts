@@ -17,7 +17,7 @@ const TIMEOUTS = {
 };
 
 export abstract class ISandboxManager {
-  abstract create(sessionId: string, config: SandboxConfig): Promise<{ sandboxId: string; authToken: string }>;
+  abstract create(sessionId: string, config: SandboxConfig, onStatusChange?: (status: SandboxStatus) => void): Promise<{ sandboxId: string; authToken: string }>;
   abstract stop(sandboxId: string): Promise<void>;
   abstract destroy(sandboxId: string): Promise<void>;
   abstract getStatus(sandboxId: string): Promise<SandboxStatus>;
@@ -27,6 +27,7 @@ export abstract class ISandboxManager {
     messageId: string,
     onEvent?: (event: SandboxEvent) => void,
   ): Promise<void>;
+  abstract findBySession(sessionId: string): Promise<{ sandboxId: string } | null>;
   abstract exec(sandboxId: string, command: string): Promise<ExecResult>;
 }
 
@@ -67,7 +68,7 @@ export class SandboxManager extends ISandboxManager {
     return active;
   }
 
-  async create(sessionId: string, config: SandboxConfig): Promise<{ sandboxId: string; authToken: string }> {
+  async create(sessionId: string, config: SandboxConfig, onStatusChange?: (status: SandboxStatus) => void): Promise<{ sandboxId: string; authToken: string }> {
     const sandboxRepo = getInject<SandboxRepository>(ISandboxRepository);
     const internalAuth = getInject<IInternalAuthService>(IInternalAuthService);
 
@@ -79,10 +80,13 @@ export class SandboxManager extends ISandboxManager {
       status: 'pending',
     });
 
+    onStatusChange?.('pending');
+
     let modalSandboxId: string | undefined;
 
     try {
       await sandboxRepo.updateStatus(sandboxRecord.id, 'starting');
+      onStatusChange?.('starting');
 
       const modal = await Promise.race([
         this.modalClient.createSandbox({
@@ -115,6 +119,7 @@ export class SandboxManager extends ISandboxManager {
       }
 
       await sandboxRepo.updateStatus(sandboxRecord.id, 'running');
+      onStatusChange?.('running');
 
       this.activeSandboxes.set(sandboxRecord.id, {
         sessionId,
@@ -139,6 +144,7 @@ export class SandboxManager extends ISandboxManager {
         );
       }
       await sandboxRepo.updateStatus(sandboxRecord.id, 'error');
+      onStatusChange?.('error');
       log.error('Sandbox creation failed', err instanceof Error ? err : new Error(String(err)));
       throw err;
     }
@@ -283,5 +289,21 @@ export class SandboxManager extends ISandboxManager {
     const sandboxRecord = await sandboxRepo.findById(sandboxId);
     if (!sandboxRecord) return 'stopped';
     return sandboxRecord.status as SandboxStatus;
+  }
+
+  async findBySession(sessionId: string): Promise<{ sandboxId: string } | null> {
+    // Check in-memory map first
+    for (const [sandboxId, active] of this.activeSandboxes) {
+      if (active.sessionId === sessionId) {
+        return { sandboxId };
+      }
+    }
+    // Fall back to DB
+    const sandboxRepo = getInject<SandboxRepository>(ISandboxRepository);
+    const record = await sandboxRepo.findBySessionId(sessionId);
+    if (record && (record.status === 'running' || record.status === 'starting' || record.status === 'pending')) {
+      return { sandboxId: record.id };
+    }
+    return null;
   }
 }
