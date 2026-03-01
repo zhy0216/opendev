@@ -33,6 +33,7 @@ export interface GitHubPR {
 export abstract class IGitHubService {
   abstract getInstallationToken(installationId: number): Promise<string>;
   abstract listInstalledRepos(installationId: number): Promise<GitHubRepo[]>;
+  abstract listUserRepos(accessToken: string): Promise<GitHubRepo[]>;
   abstract getRepo(owner: string, name: string, installationId: number): Promise<GitHubRepo>;
   abstract cloneUrl(owner: string, name: string, token: string): string;
   abstract createBranch(
@@ -111,6 +112,28 @@ export class GitHubService extends IGitHubService {
     log.debug('Listed installed repos', { installationId, count: data.repositories.length });
 
     return data.repositories.map((repo) => ({
+      id: repo.id,
+      owner: repo.owner.login,
+      name: repo.name,
+      fullName: repo.full_name,
+      defaultBranch: repo.default_branch,
+      private: repo.private,
+    }));
+  }
+
+  async listUserRepos(accessToken: string): Promise<GitHubRepo[]> {
+    const octokit = new Octokit({ auth: accessToken });
+
+    const { data: repos } = await octokit.rest.repos.listForAuthenticatedUser({
+      per_page: 100,
+      sort: 'updated',
+      direction: 'desc',
+      affiliation: 'owner,collaborator,organization_member',
+    });
+
+    log.debug('Listed user repos', { count: repos.length });
+
+    return repos.map((repo) => ({
       id: repo.id,
       owner: repo.owner.login,
       name: repo.name,

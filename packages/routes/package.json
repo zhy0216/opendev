@@ -27,6 +27,7 @@
     "@repo/service": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/use-case": "workspace:*",
+    "drizzle-orm": "^0.38.0",
     "typescript": "^5.7.0"
   }
 }

@@ -18,7 +18,8 @@ export function createAuth(db: DbClient) {
 		socialProviders: {
 			github: {
 				clientId: env.GITHUB_APP_CLIENT_ID,
-				clientSecret: env.GITHUB_APP_CLIENT_SECRET
+				clientSecret: env.GITHUB_APP_CLIENT_SECRET,
+				scope: ["read:user", "user:email", "repo"],
 			},
 		},
 		account: {
