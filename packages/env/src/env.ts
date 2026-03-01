@@ -43,11 +43,9 @@ export const env = createEnv({
 		LINEAR_API_KEY: z.string().optional(),
 		LINEAR_WEBHOOK_SECRET: z.string().optional(),
 		// Modal configuration
-		MODAL_TOKEN_ID: z.string().optional(),
-		MODAL_TOKEN_SECRET: z.string().optional(),
-		MODAL_SANDBOX_IMAGE: z
-			.string()
-			.default("ghcr.io/your-org/acp-sandbox:latest"),
+		MODAL_TOKEN_ID: z.string().min(1, "MODAL_TOKEN_ID is required"),
+		MODAL_TOKEN_SECRET: z.string().min(1, "MODAL_TOKEN_SECRET is required"),
+		MODAL_SANDBOX_IMAGE: z.string().min(1, "MODAL_SANDBOX_IMAGE is required"),
 		// Logging configuration
 		LOG_LEVEL: z
 			.enum(["trace", "debug", "info", "warn", "error", "fatal"])

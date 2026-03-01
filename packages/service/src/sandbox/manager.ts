@@ -86,7 +86,7 @@ export class SandboxManager extends ISandboxManager {
 
       const modal = await Promise.race([
         this.modalClient.createSandbox({
-          image: env.MODAL_SANDBOX_IMAGE ?? 'ghcr.io/your-org/acp-sandbox:latest',
+          image: env.MODAL_SANDBOX_IMAGE,
           encryptedPorts: [8080],
           idleTimeout: 1800,
         }),
