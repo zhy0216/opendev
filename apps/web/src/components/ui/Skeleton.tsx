@@ -235,32 +235,27 @@ export function SettingsSkeleton() {
 // Full page loading skeleton for dashboard layout
 export function DashboardLayoutSkeleton() {
   return (
-    <div className="min-h-screen bg-gray-100">
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center gap-8">
-              <Skeleton className="h-6 w-24" />
-              <div className="hidden sm:flex gap-6">
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-16" />
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-4 w-16" />
-            </div>
-          </div>
+    <div className="flex min-h-screen bg-gray-100">
+      <aside className="fixed inset-y-0 left-0 z-10 flex w-60 flex-col bg-white border-r border-gray-200">
+        <div className="flex h-14 items-center px-5 border-b border-gray-200">
+          <Skeleton className="h-6 w-24" />
         </div>
-      </nav>
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <Skeleton className="h-8 w-48 mb-2" />
-          <Skeleton className="h-4 w-72 mb-8" />
-          <DashboardStatsSkeleton />
+        <div className="flex-1 px-3 py-4 space-y-2">
+          <Skeleton className="h-8 w-full rounded-md" />
+          <Skeleton className="h-8 w-full rounded-md" />
+          <Skeleton className="h-8 w-full rounded-md" />
+          <Skeleton className="h-8 w-full rounded-md" />
+          <Skeleton className="h-8 w-full rounded-md" />
         </div>
+        <div className="border-t border-gray-200 px-4 py-3">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-4 w-16 mt-1" />
+        </div>
+      </aside>
+      <main className="ml-60 flex-1 p-6">
+        <Skeleton className="h-8 w-48 mb-2" />
+        <Skeleton className="h-4 w-72 mb-8" />
+        <DashboardStatsSkeleton />
       </main>
     </div>
   );

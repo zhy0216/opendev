@@ -1,4 +1,4 @@
-import { createRootRoute, Outlet, Link } from '@tanstack/react-router';
+import { createRootRoute, Outlet, Link, useMatches } from '@tanstack/react-router';
 import { useSession, signOut } from '../lib/auth';
 
 export const Route = createRootRoute({
@@ -7,6 +7,12 @@ export const Route = createRootRoute({
 
 function RootLayout() {
   const { data: session, isPending } = useSession();
+  const matches = useMatches();
+  const isDashboard = matches.some((m) => m.fullPath.startsWith('/dashboard'));
+
+  if (isDashboard) {
+    return <Outlet />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
