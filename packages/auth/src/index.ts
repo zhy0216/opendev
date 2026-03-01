@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 
 export function createAuth(db: DbClient) {
 	return betterAuth({
+		baseURL: env.BETTER_AUTH_URL,
 		database: drizzleAdapter(db, {
 			provider: "pg",
 			schema,
@@ -16,8 +17,8 @@ export function createAuth(db: DbClient) {
 		},
 		socialProviders: {
 			github: {
-				clientId: env.GITHUB_CLIENT_ID,
-				clientSecret: env.GITHUB_CLIENT_SECRET,
+				clientId: env.GITHUB_APP_CLIENT_ID,
+				clientSecret: env.GITHUB_APP_CLIENT_SECRET
 			},
 		},
 		account: {

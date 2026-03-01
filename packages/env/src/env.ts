@@ -28,13 +28,13 @@ export const env = createEnv({
 			.string()
 			.min(32)
 			.default("development-internal-secret-change-in-production-min32chars"),
-		// GitHub OAuth (required for login)
-		GITHUB_CLIENT_ID: z.string().min(1, "GITHUB_CLIENT_ID is required"),
-		GITHUB_CLIENT_SECRET: z.string().min(1, "GITHUB_CLIENT_SECRET is required"),
-		// GitHub App configuration
-		GITHUB_APP_ID: z.string().optional(),
-		GITHUB_PRIVATE_KEY: z.string().optional(),
-		GITHUB_WEBHOOK_SECRET: z.string().optional(),
+		// GitHub App configuration (single GitHub App for both login and API)
+		GITHUB_APP_ID: z.string().min(1, "GITHUB_APP_ID is required"),
+		GITHUB_APP_CLIENT_ID: z.string().min(1, "GITHUB_APP_CLIENT_ID is required"),
+		GITHUB_APP_CLIENT_SECRET: z.string().min(1, "GITHUB_APP_CLIENT_SECRET is required"),
+		GITHUB_APP_PRIVATE_KEY: z.string().min(1, "GITHUB_APP_PRIVATE_KEY is required"),
+		GITHUB_APP_WEBHOOK_SECRET: z.string().optional(),
+		GITHUB_APP_SLUG: z.string().optional(),
 		// Slack configuration
 		SLACK_BOT_TOKEN: z.string().optional(),
 		SLACK_SIGNING_SECRET: z.string().optional(),

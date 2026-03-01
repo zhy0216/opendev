@@ -19,15 +19,15 @@ export class GitHubBotService extends IGitHubBotService {
 
   constructor() {
     super();
-    this.configured = !!env.GITHUB_WEBHOOK_SECRET;
+    this.configured = !!env.GITHUB_APP_WEBHOOK_SECRET;
     if (!this.configured) {
       log.warn('GitHub webhook secret not configured. GitHub bot integration will be unavailable.');
     }
   }
 
   verifyWebhookSignature(signature: string, body: string): boolean {
-    if (!env.GITHUB_WEBHOOK_SECRET) return false;
-    const expectedSignature = 'sha256=' + createHmac('sha256', env.GITHUB_WEBHOOK_SECRET).update(body).digest('hex');
+    if (!env.GITHUB_APP_WEBHOOK_SECRET) return false;
+    const expectedSignature = 'sha256=' + createHmac('sha256', env.GITHUB_APP_WEBHOOK_SECRET).update(body).digest('hex');
     try {
       return timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(signature));
     } catch {

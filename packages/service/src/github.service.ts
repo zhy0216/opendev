@@ -56,7 +56,7 @@ export class GitHubService extends IGitHubService {
 
   constructor() {
     super();
-    this.configured = !!(env.GITHUB_APP_ID && env.GITHUB_PRIVATE_KEY);
+    this.configured = !!(env.GITHUB_APP_ID && env.GITHUB_APP_PRIVATE_KEY);
     if (!this.configured) {
       log.warn('GitHub App credentials not configured. GitHub integration will be unavailable.');
     }
@@ -74,7 +74,7 @@ export class GitHubService extends IGitHubService {
       authStrategy: createAppAuth,
       auth: {
         appId: env.GITHUB_APP_ID!,
-        privateKey: env.GITHUB_PRIVATE_KEY!,
+        privateKey: env.GITHUB_APP_PRIVATE_KEY!,
         installationId,
       },
     });
@@ -87,7 +87,7 @@ export class GitHubService extends IGitHubService {
       authStrategy: createAppAuth,
       auth: {
         appId: env.GITHUB_APP_ID!,
-        privateKey: env.GITHUB_PRIVATE_KEY!,
+        privateKey: env.GITHUB_APP_PRIVATE_KEY!,
         installationId,
       },
     });
