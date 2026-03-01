@@ -6,6 +6,7 @@ interface SessionSocketState {
   events: ServerMessage[];
   participants: PresenceInfo[];
   sessionStatus: string;
+  sandboxStatus: string;
   isProcessing: boolean;
 }
 
@@ -20,6 +21,7 @@ export function useSessionSocket(sessionId: string, token: string | null) {
     events: [],
     participants: [],
     sessionStatus: 'pending',
+    sandboxStatus: 'pending',
     isProcessing: false,
   });
 
@@ -115,6 +117,12 @@ export function useSessionSocket(sessionId: string, token: string | null) {
             ...prev,
             sessionStatus: message.status,
             isProcessing: message.status === 'running',
+          };
+
+        case 'sandbox_status':
+          return {
+            ...prev,
+            sandboxStatus: message.status,
           };
 
         case 'error':

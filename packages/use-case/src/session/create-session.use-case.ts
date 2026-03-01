@@ -7,8 +7,16 @@ import {
   ISessionParticipantRepository,
   IProjectRepository,
   type ProjectRepository,
+  ISecretRepository,
+  type SecretRepository,
 } from '@repo/repository';
+import { getInject, IEncryptionService } from '@repo/di';
+import { ISandboxManager, ISandboxBridge } from '@repo/service';
+import type { EncryptionService } from '@repo/service';
+import { createServiceLogger } from '@repo/logger';
 import type { UseCase } from '../base.use-case';
+
+const log = createServiceLogger('CreateSessionUseCase');
 
 export interface CreateSessionInput {
   name: string;
@@ -39,7 +47,11 @@ export class CreateSessionUseCase
     @inject(ISessionParticipantRepository)
     private readonly participantRepository: ISessionParticipantRepository,
     @inject(IProjectRepository)
-    private readonly projectRepository: ProjectRepository
+    private readonly projectRepository: ProjectRepository,
+    @inject(ISandboxManager)
+    private readonly sandboxManager: ISandboxManager,
+    @inject(ISandboxBridge)
+    private readonly sandboxBridge: ISandboxBridge
   ) {}
 
   async execute(input: CreateSessionInput): Promise<CreateSessionOutput> {
@@ -67,6 +79,72 @@ export class CreateSessionUseCase
       role: 'owner',
     });
 
+    // Fire-and-forget: spawn sandbox in the background
+    const orgId = input.organizationId ?? project.organizationId;
+    if (orgId) {
+      this.spawnSandboxInBackground(
+        session.id,
+        orgId,
+        project.repoOwner,
+        project.repoName,
+        input.branchName ?? project.defaultBranch ?? '',
+        input.model,
+        input.reasoningEffort ?? 'medium'
+      );
+    }
+
     return { session, participant };
+  }
+
+  private spawnSandboxInBackground(
+    sessionId: string,
+    organizationId: string,
+    repoOwner: string,
+    repoName: string,
+    branch: string,
+    model: string,
+    reasoningEffort: string
+  ): void {
+    (async () => {
+      try {
+        const secretRepo = getInject<SecretRepository>(ISecretRepository);
+        const encryption = getInject<EncryptionService>(IEncryptionService);
+
+        const secret = await secretRepo.getGlobalSecretByKey(organizationId, 'ANTHROPIC_API_KEY');
+        if (!secret) {
+          log.warn('ANTHROPIC_API_KEY not found for organization', { organizationId, sessionId });
+          return;
+        }
+
+        const apiKey = encryption.decrypt(secret.encryptedValue);
+
+        await this.sandboxManager.create(
+          sessionId,
+          {
+            repoOwner,
+            repoName,
+            branch,
+            secrets: {},
+            model,
+            reasoningEffort,
+            apiKey,
+          },
+          (status) => {
+            this.sandboxBridge.emitEvent({
+              type: 'sandbox_status_change',
+              sandboxId: '',
+              sessionId,
+              timestamp: Date.now(),
+              data: { status },
+            });
+          }
+        );
+      } catch (error) {
+        log.error(
+          'Background sandbox spawn failed',
+          error instanceof Error ? error : new Error(String(error))
+        );
+      }
+    })();
   }
 }

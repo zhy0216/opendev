@@ -57,6 +57,7 @@ function SessionViewPage() {
     events,
     participants,
     sessionStatus,
+    sandboxStatus: wsSandboxStatus,
     isProcessing,
     sendPrompt,
     sendStop,
@@ -141,7 +142,7 @@ function SessionViewPage() {
 
   const displayStatus = sessionStatus !== 'pending' ? sessionStatus : session.status;
   const statusStyle = getStatusStyle(displayStatus);
-  const sandboxStatus = session.sandboxStatus ?? 'pending';
+  const sandboxStatus = wsSandboxStatus !== 'pending' ? wsSandboxStatus : (session.sandboxStatus ?? 'pending');
   const hasRepo = session.repoOwner && session.repoName;
 
   return (
@@ -237,7 +238,7 @@ function SessionViewPage() {
           {/* Follow-up Prompt */}
           <FollowUpPrompt
             onSubmit={handleFollowUp}
-            disabled={!connected}
+            disabled={!connected || (isSandboxStatus(sandboxStatus) && sandboxStatus !== 'running')}
             isProcessing={isProcessing}
             onTyping={handleTyping}
           />

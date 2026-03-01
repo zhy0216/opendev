@@ -9,6 +9,7 @@ import {
 } from '@repo/repository';
 import { IQueuePromptUseCase } from '@repo/use-case';
 import { createServiceLogger } from '@repo/logger';
+import { ISandboxBridge } from '@repo/service';
 import { roomManager } from './room-manager';
 
 const log = createServiceLogger('WsHandler');
@@ -73,6 +74,17 @@ async function handleSubscribe(
     // Broadcast presence sync to all clients in the room
     const participants = roomManager.getPresence(sessionId);
     roomManager.broadcast(sessionId, { type: 'presence_sync', participants });
+
+    // Register sandbox status bridge listener for this session
+    const bridge = getInject<ISandboxBridge>(ISandboxBridge);
+    bridge.onEvent(sessionId, (event) => {
+      if (event.type === 'sandbox_status_change') {
+        roomManager.broadcast(sessionId, {
+          type: 'sandbox_status',
+          status: (event.data as { status: string }).status,
+        });
+      }
+    });
 
     log.info('Client subscribed to session', { sessionId, userId, clientId });
   } catch (error) {
