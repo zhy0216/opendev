@@ -33,6 +33,7 @@ export class ModalClient extends IModalClient {
 
     const sandbox = await modal.sandboxes.create(app, image, {
       encryptedPorts: config.encryptedPorts,
+      timeout: 3 * 60 * 60 * 1000, // 3 hours max lifetime
       idleTimeoutMs: (config.idleTimeout ?? 1800) * 1000,
     });
 
