@@ -77,6 +77,28 @@ export class SessionRoomManager {
     }
   }
 
+  removePresenceByUserId(sessionId: string, userId: string): void {
+    const sessionPresence = this.presence.get(sessionId);
+    if (!sessionPresence) return;
+    for (const [clientId, info] of sessionPresence) {
+      if (info.userId === userId) {
+        sessionPresence.delete(clientId);
+      }
+    }
+    if (sessionPresence.size === 0) {
+      this.presence.delete(sessionId);
+    }
+  }
+
+  hasPresenceForUser(sessionId: string, userId: string): boolean {
+    const sessionPresence = this.presence.get(sessionId);
+    if (!sessionPresence) return false;
+    for (const info of sessionPresence.values()) {
+      if (info.userId === userId) return true;
+    }
+    return false;
+  }
+
   getPresence(sessionId: string): PresenceInfo[] {
     const sessionPresence = this.presence.get(sessionId);
     if (!sessionPresence) return [];

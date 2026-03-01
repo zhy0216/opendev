@@ -59,6 +59,9 @@ async function handleSubscribe(
     // Join room
     roomManager.join(sessionId, ws);
 
+    // Remove any stale presence entries for this user (e.g. from a previous connection)
+    roomManager.removePresenceByUserId(sessionId, userId);
+
     // Update presence
     const presenceInfo: PresenceInfo = {
       userId,
@@ -289,9 +292,12 @@ export function handleWsClose(ws: ServerWebSocket<WsData>): void {
     roomManager.leave(sessionId, ws);
     roomManager.removePresence(sessionId, clientId);
 
-    // Broadcast presence leave to remaining clients
+    // Only broadcast presence_leave if no other connections remain for this user
     if (userId) {
-      roomManager.broadcast(sessionId, { type: 'presence_leave', userId });
+      const stillPresent = roomManager.hasPresenceForUser(sessionId, userId);
+      if (!stillPresent) {
+        roomManager.broadcast(sessionId, { type: 'presence_leave', userId });
+      }
       // Send updated presence sync
       const participants = roomManager.getPresence(sessionId);
       roomManager.broadcast(sessionId, { type: 'presence_sync', participants });

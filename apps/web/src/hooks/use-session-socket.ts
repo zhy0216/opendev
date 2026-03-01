@@ -83,8 +83,17 @@ export function useSessionSocket(sessionId: string, token: string | null) {
             events: [...prev.events, message],
           };
 
-        case 'presence_sync':
-          return { ...prev, participants: message.participants };
+        case 'presence_sync': {
+          // Deduplicate by userId — keep only the most recent entry per user
+          const byUser = new Map<string, PresenceInfo>();
+          for (const p of message.participants) {
+            const existing = byUser.get(p.userId);
+            if (!existing || p.lastSeen > existing.lastSeen) {
+              byUser.set(p.userId, p);
+            }
+          }
+          return { ...prev, participants: Array.from(byUser.values()) };
+        }
 
         case 'presence_update':
           return {
