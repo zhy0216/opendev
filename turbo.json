@@ -10,7 +10,10 @@
     "TRIGGER_SECRET_KEY",
     "TRIGGER_PROJECT_REF",
     "RESEND_API_KEY",
-    "EMAIL_FROM"
+    "EMAIL_FROM",
+    "MODAL_TOKEN_ID",
+    "MODAL_TOKEN_SECRET",
+    "MODAL_SANDBOX_IMAGE"
   ],
   "tasks": {
     "build": {

@@ -55,18 +55,40 @@ function RootLayout() {
               </Link>
             </div>
             <div className="flex items-center gap-3">
-              <Link
-                to="/auth/login"
-                className="text-gray-600 hover:text-gray-900 font-medium"
-              >
-                Sign In
-              </Link>
-              <Link
-                to="/auth/login"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium"
-              >
-                Get Started
-              </Link>
+              {session ? (
+                <div className="flex items-center gap-3">
+                  <Link to="/dashboard" className="flex items-center gap-2 group">
+                    <div className="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-medium">
+                      {(session.user.name || session.user.email || '?').charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+                      {session.user.name || session.user.email?.split('@')[0]}
+                    </span>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => signOut()}
+                    className="text-sm text-gray-500 hover:text-gray-700 font-medium"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <Link
+                    to="/auth/login"
+                    className="text-gray-600 hover:text-gray-900 font-medium"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/auth/login"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium"
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </nav>
